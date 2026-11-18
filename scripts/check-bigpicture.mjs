@@ -27,6 +27,13 @@ const press = (button, target = '#carousel') => page.evaluate(([b, t]) => {
 }, [button, target]);
 const category = () => page.evaluate(() => document.querySelector('.xmb-root').dataset.category);
 
+// Steam's carousel (its own stacking context, as Glass Dusk's «Big art» makes it) must not show
+// through: the topmost element where it sits is the XMB's, and the home is not drawn.
+const cover = await page.evaluate(() => {
+  const box = document.getElementById('carousel').getBoundingClientRect();
+  const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+  return { xmbOnTop: !!top?.closest('[data-ps3-standalone]'), homeOpacity: getComputedStyle(document.querySelector('.BasicHome')).opacity };
+});
 const layers = await page.evaluate(() => [...document.getElementById('GamepadUI_Full_Root').children].map(e => e.id).join(','));
 const start = await category();
 const blockedHome = await press(12);           // right on the hidden carousel → XMB category
@@ -43,9 +50,11 @@ await page.waitForTimeout(700);
 const gone = await page.evaluate(() => !document.querySelector('.xmb-root'));
 await page.screenshot({ path: `${out}/bpm-other-screen.png` });
 
-const result = { layers, start, blockedHome, afterRight, passedMenu, stillGame, log, gone, errors };
+const result = { cover, layers, start, blockedHome, afterRight, passedMenu, stillGame, log, gone, errors };
 console.log(JSON.stringify(result));
 assert.deepEqual(errors, []);
+assert.ok(cover.xmbOnTop, "the XMB covers Steam's carousel");
+assert.equal(cover.homeOpacity, '0', "Steam's home is not drawn under the XMB");
 assert.equal(layers.split(',').slice(0, 4).join(','), 'ps3-ground,gd-bpm-bg,ps3-wave,ps3-night');
 assert.equal(start, 'game');
 assert.ok(blockedHome, 'controller input aimed at the home is taken by the XMB');

@@ -142,10 +142,21 @@ function useHomeVisible() {
   return visible;
 }
 
+const HIDE_STEAM_HOME = `
+  .BasicHome { opacity: 0 !important; }
+  .BasicHome * { animation-play-state: paused !important; }
+`;
+
 function App({ platform, Xmb }: { platform: Platform; Xmb: typeof import('../Xmb').Xmb }) {
   const settings = useSyncExternalStore(subscribe, getSettings, getSettings);
   const visible = useHomeVisible();
-  return visible ? <Xmb platform={platform} settings={settings} updateSettings={updateSettings} InputSurface={StandaloneInput} /> : null;
+  if (!visible) return null;
+  return <>
+    {/* Steam's home stays in place under the XMB (it keeps Steam's focus, so the controller is
+        still caught above) but is no longer drawn: Glass Dusk's big carousel showed through. */}
+    <style>{HIDE_STEAM_HOME}</style>
+    <Xmb platform={platform} settings={settings} updateSettings={updateSettings} InputSurface={StandaloneInput} />
+  </>;
 }
 
 let root: Root | null = null;
@@ -168,6 +179,9 @@ async function start(): Promise<boolean> {
     const platform = createSteamPlatform({ media, status });
     const container = document.createElement('div');
     container.dataset.ps3Standalone = '';
+    // Above everything Steam draws in #Main (the home's carousel builds stacking contexts of its
+    // own); Steam's side menus and dialogs live outside #Main and stay above the XMB.
+    container.style.cssText = 'position:fixed;inset:0;z-index:2147483000;';
     // Inside #Main, like a route: Steam's side menus and dialogs stay above it.
     (document.getElementById('Main') ?? document.body).appendChild(container);
     root = createRoot(container);
