@@ -14,6 +14,8 @@ Basé sur [PSP XMB](https://github.com/timskap/psp-xmb) de Tim et [Glass Dusk](h
 - `ps3-xmb-0.1.0.zip` → plugin Decky (XMB, Steam Deck + Big Picture PC)
 - `ps3-xmb-glass-dusk-millennium-0.1.0.zip` → thème Millennium (Steam bureau)
 
+**➜ [Guide d'installation pas à pas](#installation-pas-à-pas)** (Steam Deck, PC Big Picture, Steam bureau)
+
 ![Accueil XMB, couleur Bleu](docs/xmb-home.png)
 
 | Liste des jeux (accent tiré de l'art) | Menu Options en verre Glass Dusk |
@@ -37,6 +39,126 @@ Basé sur [PSP XMB](https://github.com/timskap/psp-xmb) de Tim et [Glass Dusk](h
 | PC, Steam classique uniquement | Thème Millennium |
 | PC, Steam classique + Big Picture | Les deux (XMB en accueil Big Picture, Glass Dusk PS3 partout ailleurs) |
 
+## Installation pas à pas
+
+> **En bref**
+> - Steam Deck → [1. Le XMB sur Steam Deck](#1-installer-le-xmb-sur-steam-deck)
+> - PC en Big Picture → [2. Le XMB sur PC](#2-installer-le-xmb-sur-pc-big-picture-windows)
+> - Steam bureau sur PC → [3. Le thème bureau](#3-installer-le-thème-bureau-millennium)
+>
+> Les deux fichiers se trouvent dans la [dernière release](https://github.com/LempereurTom/ps3-xmb/releases/latest).
+
+### 1. Installer le XMB sur Steam Deck
+
+**a. Installer Decky Loader** (une seule fois)
+
+1. Appuyez sur **STEAM** → *Alimentation* → **Passer en mode bureau**.
+2. Dans le navigateur, ouvrez [decky.xyz](https://decky.xyz) et téléchargez l'installeur.
+3. Lancez le fichier téléchargé et choisissez la version **Release** (stable).
+4. Revenez au mode Jeu avec l'icône *Return to Gaming Mode* du bureau.
+5. Appuyez sur le bouton **…** : une nouvelle icône en forme de **prise** apparaît dans le menu rapide. C'est Decky.
+
+**b. Activer le mode développeur de Decky** (nécessaire pour installer un plugin hors catalogue)
+
+1. **…** → icône prise → **roue dentée** (paramètres de Decky).
+2. *Général* → activez **Mode développeur**.
+
+**c. Installer PS3 XMB**
+
+Le plus simple est d'installer directement depuis l'adresse :
+
+1. Paramètres de Decky → onglet **Développeur** → **Installer un plugin depuis une URL**.
+2. Saisissez :
+   ```
+   https://github.com/LempereurTom/ps3-xmb/releases/download/v0.1.0/ps3-xmb-0.1.0.zip
+   ```
+3. Validez, puis confirmez l'installation.
+
+Si vous préférez passer par le fichier : en mode bureau, téléchargez `ps3-xmb-0.1.0.zip` depuis la [release](https://github.com/LempereurTom/ps3-xmb/releases/latest). Ensuite, onglet **Développeur** → **Installer un plugin depuis un fichier ZIP** et choisissez-le dans *Téléchargements*.
+
+**d. Activer l'accueil PS3**
+
+1. **…** → icône prise → **PS3 XMB**.
+2. Activez **Accueil PS3**. Le bouton **Ouvrir le XMB** permet aussi de l'essayer sans remplacer l'accueil.
+3. Appuyez sur **STEAM** → *Accueil* : le XMB s'affiche.
+
+Pour revenir à l'accueil Steam normal : **…** → PS3 XMB → **Rétablir l'accueil Steam**, ou dans le XMB *Paramètres → Paramètres système → Accueil Steam standard*.
+
+### 2. Installer le XMB sur PC (Big Picture, Windows)
+
+⚠️ Decky Loader sur Windows **n'est pas supporté officiellement** par ses auteurs ([wiki Decky](https://wiki.deckbrew.xyz/en/user-guide/windows-installation)). Ça fonctionne, mais une mise à jour de Steam peut le casser temporairement.
+
+**a. Préparer Steam**
+
+1. Fermez complètement Steam (clic droit sur l'icône près de l'horloge → *Quitter*).
+2. Ouvrez le dossier de Steam (par défaut `C:\Program Files (x86)\Steam`).
+3. Créez un fichier vide nommé exactement **`.cef-enable-remote-debugging`**. Dans l'Explorateur : *Nouveau → Document texte*, puis renommez-le en supprimant aussi le `.txt`. Les extensions de fichiers doivent être visibles (*Affichage → Afficher → Extensions de noms de fichiers*).
+
+**b. Lancer Decky**
+
+1. Sur la [page des releases de Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader/releases), téléchargez l'archive **PluginLoader Win** de la dernière version stable et décompressez-la.
+2. Lancez **`PluginLoader_noconsole.exe`** (ou `PluginLoader.exe` pour voir les messages).
+3. Relancez Steam puis passez en **Big Picture**.
+4. Ouvrez le menu rapide (bouton **Guide/Xbox + A** à la manette, ou **Ctrl + 2** au clavier) : l'icône **prise** de Decky doit apparaître.
+
+Decky ne fonctionne que **tant que `PluginLoader` est lancé**. Pour qu'il démarre avec Windows, appuyez sur **Win + R**, tapez `shell:startup` et placez-y un raccourci vers `PluginLoader_noconsole.exe`.
+
+**c. Installer et activer PS3 XMB**
+
+Suivez les étapes **1.b**, **1.c** et **1.d** ci-dessus : c'est la même chose dans Big Picture. Dans le XMB, **Utilisateurs → Quitter Big Picture** ramène au Steam de bureau.
+
+**d. Optionnel : Photo et Vidéo**
+
+Ces deux catégories lisent vos captures et enregistrements Steam ainsi que vos dossiers Images et Vidéos. Sur PC, elles ont besoin de **[Python 3](https://www.python.org/downloads/)**. Pendant l'installation de Python, cochez *Add python.exe to PATH*. Les vignettes de vidéos utilisent `ffmpeg` s'il est installé. Tout le reste du XMB fonctionne sans.
+
+### 3. Installer le thème bureau (Millennium)
+
+**a. Installer Millennium** (une seule fois)
+
+1. Allez sur [steambrew.app](https://steambrew.app), téléchargez l'installeur pour votre système et lancez-le. Sous Linux, suivez les instructions de la page.
+2. Lancez Steam : Millennium s'ajoute à Steam, et un menu **Millennium** apparaît dans les paramètres de Steam.
+
+**b. Ajouter le thème**
+
+1. Téléchargez **`ps3-xmb-glass-dusk-millennium-0.1.0.zip`** depuis la [release](https://github.com/LempereurTom/ps3-xmb/releases/latest).
+2. Décompressez-le : vous obtenez un dossier **`PS3-XMB`**.
+3. Placez ce dossier dans le dossier des thèmes de Millennium :
+   - **Windows** : `C:\Program Files (x86)\Steam\millennium\themes\`
+   - **Linux** : `~/.steam/steam/millennium/themes/`
+
+   Vérifiez que le fichier `skin.json` se trouve **directement** dans `themes\PS3-XMB\`, et non dans `themes\PS3-XMB\PS3-XMB\`.
+4. Redémarrez Steam complètement (*Steam → Quitter*, puis relancez).
+
+**c. Activer et régler le thème**
+
+1. Paramètres de Steam → **Millennium** → **Thèmes**.
+2. Choisissez **PS3 XMB · Glass Dusk**.
+3. Cliquez sur **⋯ → Paramètres** pour tout personnaliser : l'onglet **PS3** (fond, couleur, vague, accent, teinte du verre) et les onglets Apparence, Bibliothèque, Big Picture et overlay, Plugins, Couleurs.
+4. Les réglages s'appliquent **au redémarrage de Steam**.
+
+Si la bibliothèque reste d'aspect Steam d'origine alors que le magasin est bien thématisé : quittez Steam complètement, relancez-le, puis dans Millennium passez à un autre thème et revenez à celui-ci. Voir aussi la section dépannage du [README de Glass Dusk](desktop-theme/PS3-XMB/README.md).
+
+### Mettre à jour
+
+- **XMB** : réinstallez le nouveau ZIP par l'URL ou le fichier (étape 1.c) ; vos réglages sont conservés.
+- **Thème bureau** : remplacez le dossier `PS3-XMB` par le nouveau, puis redémarrez Steam.
+
+### Désinstaller
+
+- **XMB** : **…** → PS3 XMB → *Rétablir l'accueil Steam*, puis paramètres de Decky → *Plugins* → PS3 XMB → **Désinstaller**. Aucun fichier de Steam ni de jeu n'est modifié.
+- **Thème bureau** : Millennium → Thèmes → choisissez un autre thème (ou celui par défaut), puis supprimez le dossier `PS3-XMB`.
+
+### Dépannage
+
+| Problème | Solution |
+|---|---|
+| L'icône prise de Decky n'apparaît pas | Redémarrez Steam. Sur PC, vérifiez que `PluginLoader` tourne et que le fichier `.cef-enable-remote-debugging` existe. |
+| Le XMB affiche une erreur puis l'accueil Steam revient | Le plugin s'est désactivé tout seul pour ne pas bloquer Steam. Réactivez **Accueil PS3** ; si ça recommence, ouvrez une [issue](https://github.com/LempereurTom/ps3-xmb/issues). |
+| Photo / Vidéo vides sur PC | Installez Python 3 (étape 2.d) puis rechargez le plugin depuis Decky. |
+| Ça rame sur un petit PC (bureau) | Onglet PS3 → **Vague XMB : Fixe**. Dans Apparence, **Verre : Plus dense** réduit aussi l'effet de transparence. |
+| Ça rame sur le Deck | Dans le XMB : *Paramètres → Paramètres de thème → Animation de la vague : Désactivé*. |
+| Après une mise à jour de Steam, Decky ne s'ouvre plus (Deck) | Passez en mode bureau, déplacez `~/homebrew/plugins/ps3-xmb` hors du dossier `plugins`, puis `sudo systemctl restart plugin_loader`. |
+
 ## Le XMB (plugin Decky)
 
 - **Catégories PS3** : Utilisateurs · Paramètres · Photo · Musique · Vidéo · Jeu · Réseau · Steam Network · Amis.
@@ -51,26 +173,9 @@ Basé sur [PSP XMB](https://github.com/timskap/psp-xmb) de Tim et [Glass Dusk](h
 
 Réglages : **Paramètres → Paramètres de thème** (couleur, panneaux, accent, fond du jeu, animation), **Paramètres système** (langue, touches), **Paramètres audio**, **Paramètres de jeu**. Les principaux sont aussi dans le menu rapide de Decky.
 
-### Installation sur Steam Deck
-
-1. Installez Decky Loader, activez le *Mode développeur* dans ses réglages.
-2. Téléchargez `ps3-xmb-0.1.0.zip` depuis les [releases](https://github.com/LempereurTom/ps3-xmb/releases/latest), puis Decky → Développeur → **Installer un plugin depuis un ZIP**.
-3. … → Decky → PS3 XMB → activez **Accueil PS3** (ou *Ouvrir le XMB*).
-
-### Installation sur PC (Big Picture, Windows)
-
-Decky Loader fonctionne sur Windows de façon **non officielle** ([wiki Decky](https://wiki.deckbrew.xyz/en/user-guide/windows-installation)) :
-
-1. Téléchargez l'archive *PluginLoader Win* des releases Decky et lancez `PluginLoader.exe` (ou `PluginLoader_noconsole.exe`). Il doit rester lancé ; ajoutez-le au démarrage si vous voulez.
-2. Créez le fichier vide `.cef-enable-remote-debugging` dans le dossier de Steam s'il n'existe pas, puis redémarrez Steam.
-3. Ouvrez Big Picture, installez le ZIP comme sur le Deck.
-4. Pour Photo et Vidéo, installez [Python 3](https://www.python.org/downloads/) (le reste fonctionne sans). Les vignettes vidéo utilisent `ffmpeg` s'il est dans le PATH.
-
-Sans batterie (PC de bureau), l'indicateur de batterie disparaît.
-
 ## Le thème bureau (Millennium)
 
-C'est Glass Dusk **en entier**, avec toutes ses options traduites en français (42 réglages : verre, finition, coins, transitions, écran de connexion, veille, accueil et ses statistiques, liste des jeux, magasin, Big Picture, overlay, plugins, plus l'onglet Couleurs), et un onglet **PS3** :
+C'est Glass Dusk **en entier**, avec toutes ses options traduites en français (36 réglages : verre, finition, coins, transitions, écran de connexion, veille, accueil et ses statistiques, liste des jeux, magasin, Big Picture, overlay, plugins, plus l'onglet Couleurs), et un onglet **PS3** :
 
 | Réglage PS3 | Valeurs |
 |---|---|
@@ -82,7 +187,7 @@ C'est Glass Dusk **en entier**, avec toutes ses options traduites en français (
 | Teinte du verre | **Couleur PS3** · Onglet Couleurs |
 | Assombrir le soir | **oui** · non |
 
-Installation : téléchargez `ps3-xmb-glass-dusk-millennium-0.1.0.zip` depuis les [releases](https://github.com/LempereurTom/ps3-xmb/releases/latest) et décompressez son dossier `PS3-XMB` dans `Steam/millennium/themes/` (ou copiez `desktop-theme/PS3-XMB` de ce dépôt), puis Millennium → Thèmes → *PS3 XMB · Glass Dusk*. Les réglages s'appliquent au redémarrage de Steam.
+Installation : voir [Installer le thème bureau](#3-installer-le-thème-bureau-millennium) plus haut.
 
 ## Performances
 
