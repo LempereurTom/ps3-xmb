@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Banc d'essai Big Picture</title>
+<link rel="stylesheet" href="../PS3-XMB/ps3/ps3-bpm.css">
+<style>
+  body { margin:0; height:100vh; background:#000; color:#fff; font:15px sans-serif; overflow:hidden; }
+  #GamepadUI_Full_Root { position:relative; width:100vw; height:100vh; }
+  #Main { position:relative; z-index:1; height:100%; }
+  #gd-bpm-bg { position:absolute; inset:0; z-index:0; background:#2a1a10; opacity:0; }
+  #gd-bpm-bg.show { opacity:1; }
+  .BasicHome { padding:40px; }
+  #side-menu { position:fixed; right:0; top:0; z-index:50; display:none; }
+</style>
+<script>
+  // A minimal stand-in for Steam's shared context, so the Millennium XMB can be exercised
+  // headless. It records what the XMB asks Steam to do in window.__steamLog.
+  window.__steamLog = [];
+  const log = entry => window.__steamLog.push(entry);
+  const router = { Navigate: p => log('router ' + p), NavigationManager: {}, WindowStore: {} };
+  window.webpackChunksteamui = { push([, , cb]) { const r = id => ({ router: { Router: router } })[id]; r.m = { router: true }; cb(r); } };
+  window.SteamUIStore = { GetFocusedWindowInstance: () => ({
+    Navigate: p => log('nav ' + p), NavigateBack: () => {}, NavigateToSteamWeb: u => log('web ' + u),
+    Navigator: { Chat: () => log('chat'), ExternalWeb: u => log('ext ' + u) },
+    MenuStore: { CloseSideMenus: () => {}, OpenSideMenu: () => {}, OpenQuickAccessMenu: () => {}, OpenMainMenu: () => {} },
+  }) };
+  const apps = [[620, 'Portal 2'], [367520, 'Hollow Knight'], [413150, 'Stardew Valley']].map(([appid, name], i) => ({
+    appid, display_name: name, app_type: 1, installed: true, rt_last_time_played: 1731600000 - i * 86400, gameid: String(appid) }));
+  window.collectionStore = { GetCollection: id => ({ visibleApps: id === 'type-games' ? apps : [] }), userCollections: [] };
+  window.appStore = { GetCustomLandcapeImageURLs: () => [], GetAppOverviewByAppID: id => apps.find(a => a.appid === id), GetCustomHeroImageURLs: () => [] };
+  window.SteamClient = { Apps: { RunGame: id => log('run ' + id) }, Screenshots: { GetAllLocalScreenshots: async () => [] }, URL: {}, UI: { ExitBigPictureMode: () => log('exit-bp') } };
+  window.addEventListener('error', e => { document.title = 'ERREUR ' + e.message; });
+</script>
+</head>
+<body class="GamepadUIPopupWindowBody">
+<div id="GamepadUI_Full_Root">
+  <div id="gd-bpm-bg" class="show"></div>
+  <div id="header">header Steam</div>
+  <div id="Main"><div class="BasicHome"><button id="carousel">Carrousel Steam (focus)</button></div></div>
+  <div id="side-menu"><button id="menu-item">Menu STEAM</button></div>
+</div>
+<script src="../PS3-XMB/ps3/ps3.js"></script>
+<script src="../PS3-XMB/ps3/xmb.js"></script>
+</body></html>

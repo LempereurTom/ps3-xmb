@@ -43,7 +43,8 @@ export interface Game {
 }
 export interface GameFolder { id: string; name: string; gameIds: number[] }
 export type MediaKind = 'photo' | 'video';
-export interface MediaFile { id: string; title: string; time: number; format: string }
+/** url/thumb: direct addresses (Steam screenshots in the Millennium version); otherwise served by the Decky media worker. */
+export interface MediaFile { id: string; title: string; time: number; format: string; url?: string; thumb?: string }
 export interface MediaAlbum { id: string; name: string; source: 'pictures' | 'screenshots' | 'videos' | 'recordings'; appId: string; entries: MediaFile[] }
 export interface MediaLibrary { base: string; albums: MediaAlbum[] }
 export type GameAction = 'install' | 'uninstall' | 'properties' | 'controller' | 'downloads';

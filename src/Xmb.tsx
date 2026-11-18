@@ -211,7 +211,7 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
     if (album) return album.entries.map(file => {
       const subtitle = captureDate.format(new Date(file.time * 1000));
       const title = file.format === 'DASH' && /^(clip|fg|bg)_/.test(file.title) ? album.title : file.title;
-      return { id: file.id, title, subtitle, icon: mediaKind, artwork: [`${media.library!.base}/${file.id}/thumb`],
+      return { id: file.id, title, subtitle, icon: mediaKind, artwork: [file.thumb ?? `${media.library!.base}/${file.id}/thumb`],
         media: { ...file, title }, action: () => setViewing(true) };
     });
     return albums.map(group => ({ id: group.id, title: group.title, subtitle: String(group.entries.length), icon: 'folder',

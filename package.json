@@ -1,6 +1,6 @@
 {
   "name": "ps3-xmb",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "A PS3-style XMB home screen for Steam Deck and Steam Big Picture (PC), based on PSP XMB by Tim",
@@ -11,11 +11,12 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "build": "npm run typecheck && rollup -c && node scripts/package.mjs",
+    "build": "npm run typecheck && rollup -c && node scripts/package.mjs && npm run build:millennium",
     "build:preview": "vite build",
     "test": "node --import tsx --test tests/*.test.ts",
     "check:xmb": "node scripts/check-xmb.mjs",
-    "check:desktop": "node scripts/check-desktop.mjs"
+    "check:desktop": "node scripts/check-desktop.mjs",
+    "build:millennium": "vite build --config vite.standalone.config.ts"
   },
   "dependencies": {
     "@decky/api": "^1.1.3",

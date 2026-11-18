@@ -19,11 +19,18 @@ for (const [name, q] of Object.entries(cases)) {
   await page.screenshot({ path: `${out}/desk-${name}.png` });
 }
 // performance: count frames drawn by the wave in still mode vs live mode over 2 s
-for (const mode of ['still', 'live']) {
-  await page.goto('http://127.0.0.1:5173/desktop-theme/test/harness.html' + (mode === 'live' ? '?css=' + encodeURIComponent(':root{--ps3-wave:live}') : ''));
+const draws = {};
+for (const mode of ['live', 'still']) {
+  await page.goto('http://127.0.0.1:5173/desktop-theme/test/harness.html' + (mode === 'still' ? '?css=' + encodeURIComponent(':root{--ps3-wave:still}') : ''));
   await page.evaluate(() => { const c = document.getElementById('ps3-wave'); window.__draws = 0; const ctx = c.getContext('2d'); const o = ctx.clearRect.bind(ctx); ctx.clearRect = (...a) => { window.__draws++; return o(...a); }; });
   await page.waitForTimeout(2000);
-  console.log('draws in 2s', mode, await page.evaluate(() => window.__draws));
+  draws[mode] = await page.evaluate(() => window.__draws);
+  console.log('draws in 2s', mode, draws[mode]);
 }
+const assert = (await import('node:assert/strict')).default;
+assert.deepEqual(errors, []);
+assert.ok(draws.live >= 30 && draws.live <= 46, `animated wave ~20 fps on the desktop (got ${draws.live})`);
+assert.equal(draws.still, 0, 'still wave draws nothing per frame');
 console.log('errors', JSON.stringify(errors));
 await browser.close();
+console.log('PASS');

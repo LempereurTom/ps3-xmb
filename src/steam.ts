@@ -1,18 +1,19 @@
 import { Navigation, Router } from '@decky/ui';
-import { callable } from '@decky/api';
-import type { Game, GameFolder, MediaKind, MediaLibrary, Platform, Status } from './model';
+import type { Game, GameFolder, Platform } from './model';
 import { performGameAction } from './steam-actions';
-import { createHealthReporter } from './health';
 
-const deviceStatus = callable<[], Status>('get_status');
-const reportHealth = callable<[event: string, value: string | number], void>('report_health');
+/**
+ * Steam's own library, navigation and game actions, shared by both versions:
+ * the Decky plugin (backend in Python) and the Millennium theme (no backend).
+ * `backend` supplies what Steam's frontend cannot: media, device status, health reports.
+ */
+export type PlatformBackend = Pick<Platform, 'media' | 'status' | 'report'>;
 
-const health = createHealthReporter((event, value) => { void reportHealth(event, value).catch(() => {}); });
-export const flushInputReport = health.flushInput;
+export function createSteamPlatform(backend: PlatformBackend): Platform {
+  return { ...steamCore, ...backend };
+}
 
-export const steamPlatform: Platform = {
-  report: health.report,
-  media: callable<[kind: MediaKind], MediaLibrary>('get_media'),
+const steamCore: Omit<Platform, 'media' | 'status' | 'report'> = {
   async games() {
     if (typeof collectionStore === 'undefined') throw new Error('Steam collectionStore is not ready');
     const collections = ['type-games', 'type-software'];
@@ -70,7 +71,6 @@ export const steamPlatform: Platform = {
     }
     return result.sort((a, b) => a.name.localeCompare(b.name));
   },
-  status: deviceStatus,
   gameAction: performGameAction,
   launch(game) {
     Navigation.CloseSideMenus();

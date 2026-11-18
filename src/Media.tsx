@@ -51,7 +51,7 @@ export const MediaViewer = forwardRef<ViewerHandle, ViewerProps>(function MediaV
   const [duration, setDuration] = useState(0);
   const [controls, setControls] = useState(true);
   const dash = file.format === 'DASH';
-  const src = `${base}/${file.id}/${dash ? 'clip.mpd' : 'file'}`;
+  const src = file.url ?? `${base}/${file.id}/${dash ? 'clip.mpd' : 'file'}`;
   useEffect(() => {
     if (!dash || !video.current) return;
     const element = video.current;

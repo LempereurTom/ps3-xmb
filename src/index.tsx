@@ -5,7 +5,7 @@ import { Xmb, type InputSurfaceProps } from './Xmb';
 import { handleXmbKey } from './input';
 import { Icon } from './Icons';
 import { getSettings, initSettings, subscribe, updateSettings, useSettings, watchRemoteSettings } from './settings';
-import { flushInputReport, steamPlatform } from './steam';
+import { flushInputReport, steamPlatform } from './decky-backend';
 import { closeSound } from './sound';
 import type { Command } from './model';
 
