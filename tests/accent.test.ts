@@ -38,3 +38,9 @@ test('panel and accent settings fall back safely', () => {
   assert.equal(cleanSettings({ accent: 'ps3' }).accent, 'ps3');
   assert.equal(cleanSettings({ accent: 'rainbow' }).accent, 'game');
 });
+test('the wave tint is a light hint of the game colour', async () => {
+  const { mixWithWhite } = await import('../src/Waves');
+  assert.equal(mixWithWhite('#ff0000', 0.28), 'rgb(255,184,184)');
+  assert.equal(mixWithWhite('#000000', 0), 'rgb(255,255,255)');
+  assert.equal(mixWithWhite('not a colour', 0.5), 'rgb(255,255,255)');
+});

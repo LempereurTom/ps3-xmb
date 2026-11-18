@@ -7,7 +7,8 @@ import { nightLevel, resolvePalette } from './palette';
  * time of day, with a translucent wave ribbon made of thin strands and drifting sparkles.
  *
  * Performance budget (Steam Deck and PC Big Picture):
- *  - the canvas is drawn at half resolution and never wider than 1100 px;
+ *  - the canvas is drawn at the screen's real resolution (sharp on a 1080p or 4K TV), never
+ *    wider than 2560 px; drawing 18 thin paths and 26 stamped sprites is cheap at any size;
  *  - 30 fps at most, and no frame at all while `paused` (game art, media viewer, options
  *    panel — the glass blur behind the panel would be recomputed on every frame), while the
  *    page is hidden or when motion is off: a single still frame is drawn instead;
@@ -17,7 +18,7 @@ import { nightLevel, resolvePalette } from './palette';
 
 const STRANDS = 18;
 const SPARKS = 26;
-const MAX_WIDTH = 1100;
+const MAX_WIDTH = 2560;
 
 interface Spark { x: number; r: number; speed: number; phase: number; drift: number }
 const SPARK_LIST: Spark[] = Array.from({ length: SPARKS }, (_, i) => ({
@@ -36,6 +37,14 @@ function ribbonY(x: number, w: number, h: number, t: number, i: number) {
   return base + twist + swell + spread;
 }
 
+/** "#rrggbb" mixed into white by `amount` (0–1), as "rgb(r,g,b)"; white for anything else. */
+export function mixWithWhite(hex: string, amount: number) {
+  const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+  if (!m) return 'rgb(255,255,255)';
+  const [r, g, b] = m.slice(1).map(v => Math.round(255 + (parseInt(v, 16) - 255) * amount));
+  return `rgb(${r},${g},${b})`;
+}
+
 const STRAND_ALPHA = Array.from({ length: STRANDS }, (_, i) => 0.12 + 0.4 * Math.pow(Math.sin(Math.PI * i / (STRANDS - 1)), 2));
 
 class WavePainter {
@@ -45,6 +54,7 @@ class WavePainter {
   private step = 8;
   private readonly sprite: HTMLCanvasElement;
 
+  private tint = '';
   constructor(private readonly canvas: HTMLCanvasElement, private readonly ctx: CanvasRenderingContext2D) {
     this.sprite = canvas.ownerDocument.createElement('canvas');
     this.sprite.width = this.sprite.height = 32;
@@ -59,9 +69,29 @@ class WavePainter {
     }
   }
 
+  /** The strands take a little of the selected game's colour ('' = white). True when it changed. */
+  setTint(tint: string) {
+    if (tint === this.tint) return false;
+    this.tint = tint;
+    this.fade = this.strandGradient(this.canvas.width);
+    return true;
+  }
+
+  private strandGradient(w: number) {
+    // White, or white with a quarter of the game's colour: a hint, never a coloured ribbon.
+    // Mixed here (a canvas may not take CSS color-mix()).
+    const ink = mixWithWhite(this.tint, 0.28);
+    const fade = this.ctx.createLinearGradient(0, 0, w, 0);
+    fade.addColorStop(0, 'rgba(255,255,255,0)');
+    fade.addColorStop(0.18, ink);
+    fade.addColorStop(0.82, ink);
+    fade.addColorStop(1, 'rgba(255,255,255,0)');
+    return fade;
+  }
+
   /** Returns true when the size changed. */
   resize(cssWidth: number, cssHeight: number, ratio: number) {
-    const scale = Math.min(ratio * 0.5, MAX_WIDTH / Math.max(1, cssWidth));
+    const scale = Math.min(ratio, MAX_WIDTH / Math.max(1, cssWidth));
     const w = Math.max(320, Math.round(cssWidth * scale));
     const h = Math.max(200, Math.round(cssHeight * scale));
     if (w === this.canvas.width && h === this.canvas.height && this.sheet) return false;
@@ -72,12 +102,9 @@ class WavePainter {
     this.sheet.addColorStop(0, 'rgba(255,255,255,0.15)');
     this.sheet.addColorStop(0.5, 'rgba(255,255,255,0.07)');
     this.sheet.addColorStop(1, 'rgba(255,255,255,0)');
-    this.fade = ctx.createLinearGradient(0, 0, w, 0);
-    this.fade.addColorStop(0, 'rgba(255,255,255,0)');
-    this.fade.addColorStop(0.18, 'rgba(255,255,255,1)');
-    this.fade.addColorStop(0.82, 'rgba(255,255,255,1)');
-    this.fade.addColorStop(1, 'rgba(255,255,255,0)');
-    this.step = Math.max(4, Math.round(w / 90));
+    this.fade = this.strandGradient(w);
+    // More points on a bigger canvas, so the curves stay smooth at full resolution.
+    this.step = Math.max(6, Math.round(w / 160));
     const points = Math.ceil(w / this.step) + 3;
     this.rows = Array.from({ length: STRANDS }, () => new Float32Array(points));
     return true;
@@ -104,7 +131,7 @@ class WavePainter {
     ctx.fill();
     // The strands: brighter towards the centre of the bundle, fading at the screen edges.
     ctx.strokeStyle = this.fade;
-    ctx.lineWidth = Math.max(1, w / 900);
+    ctx.lineWidth = Math.max(1, w / 1500);
     for (let i = 0; i < STRANDS; i++) {
       const row = rows[i];
       ctx.globalAlpha = STRAND_ALPHA[i];
@@ -132,11 +159,14 @@ function useClockTick(ms: number) {
   return now;
 }
 
-export const Waves = memo(function Waves({ palette, motion, paused = false }: { palette: Palette; motion: boolean; paused?: boolean }) {
+export const Waves = memo(function Waves({ palette, motion, paused = false, tint }: { palette: Palette; motion: boolean; paused?: boolean; tint?: string }) {
   const background = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const pausedRef = useRef(paused);
   const wakeRef = useRef<() => void>(() => {});
+  const painterRef = useRef<{ setTint: (tint: string) => boolean; redraw: () => void } | null>(null);
+  const tintRef = useRef(tint ?? '');
+  tintRef.current = tint ?? '';
   const now = useClockTick(5 * 60 * 1000);
   const colour = resolvePalette(palette, now);
   const night = nightLevel(now);
@@ -150,6 +180,7 @@ export const Waves = memo(function Waves({ palette, motion, paused = false }: { 
     const doc = element.ownerDocument;
     const win = doc.defaultView ?? window;
     const painter = new WavePainter(element, ctx);
+    painter.setTint(tintRef.current);
     const reduced = win.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
     const animate = motion && !reduced;
     let frame = 0;
@@ -157,7 +188,7 @@ export const Waves = memo(function Waves({ palette, motion, paused = false }: { 
     let t = 37; // A pleasing starting shape for the still frame.
 
     const resize = () => {
-      if (painter.resize(element.clientWidth, element.clientHeight, Math.min(1, win.devicePixelRatio || 1))) painter.draw(t);
+      if (painter.resize(element.clientWidth, element.clientHeight, Math.min(2, win.devicePixelRatio || 1))) painter.draw(t);
     };
     const running = () => animate && !pausedRef.current && !doc.hidden;
     const loop = (time: number) => {
@@ -171,6 +202,7 @@ export const Waves = memo(function Waves({ palette, motion, paused = false }: { 
     };
     const wake = () => { if (!frame && running()) { last = 0; frame = win.requestAnimationFrame(loop); } };
     wakeRef.current = wake;
+    painterRef.current = { setTint: value => painter.setTint(value), redraw: () => painter.draw(t) };
 
     const observer = new ResizeObserver(resize);
     observer.observe(element);
@@ -185,13 +217,18 @@ export const Waves = memo(function Waves({ palette, motion, paused = false }: { 
     return () => {
       if (frame) win.cancelAnimationFrame(frame);
       wakeRef.current = () => {};
+      painterRef.current = null;
       observer.disconnect();
       doc.removeEventListener('visibilitychange', visibility);
     };
   }, [motion]);
 
-  return <div ref={background} className={`xmb-background ps3-${colour}`} aria-hidden="true" style={{ '--xmb-night': night.toFixed(2) } as CSSProperties}>
+  // A still wave picks up the new tint at once; a moving one at its next frame.
+  useEffect(() => { if (painterRef.current?.setTint(tint ?? '')) painterRef.current.redraw(); }, [tint]);
+
+  return <div ref={background} className={`xmb-background ps3-${colour}`} aria-hidden="true" style={{ '--xmb-night': night.toFixed(2), '--xmb-tint': tint ?? 'transparent' } as CSSProperties}>
     <div className="xmb-light" />
+    <div className={`xmb-tint${tint ? ' on' : ''}`} />
     <canvas ref={canvas} className="xmb-wave-canvas" />
     <div className="xmb-night" />
   </div>;

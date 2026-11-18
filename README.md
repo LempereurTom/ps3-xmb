@@ -5,7 +5,7 @@ L'interface de la PlayStation 3 pour Steam, mariée au verre fumé et aux couleu
 
 Le **même XMB** existe en deux versions, selon l'outil que vous utilisez :
 
-| | Version Decky (`ps3-xmb-0.2.2.zip`) | Version Millennium (`ps3-xmb-glass-dusk-millennium-0.2.2.zip`) |
+| | Version Decky (`ps3-xmb-0.2.3.zip`) | Version Millennium (`ps3-xmb-glass-dusk-millennium-0.2.3.zip`) |
 |---|---|---|
 | Pour | **Steam Deck** (mode Jeu), Big Picture sur PC via Decky | **PC** (Windows / Linux) : Steam bureau **et** Big Picture |
 | Menu XMB PS3 à l'accueil | ✅ | ✅ (Big Picture) |
@@ -21,8 +21,8 @@ Le **même XMB** existe en deux versions, selon l'outil que vous utilisez :
 Basé sur [PSP XMB](https://github.com/timskap/psp-xmb) de Tim et [Glass Dusk](https://github.com/Yareli0i/glass-dusk) de Yareli (licences MIT).
 
 **Téléchargements : [dernière release](https://github.com/LempereurTom/ps3-xmb/releases/latest)**
-- `ps3-xmb-0.2.2.zip` → plugin Decky (XMB, Steam Deck + Big Picture PC)
-- `ps3-xmb-glass-dusk-millennium-0.2.2.zip` → thème Millennium (Steam bureau)
+- `ps3-xmb-0.2.3.zip` → plugin Decky (XMB, Steam Deck + Big Picture PC)
+- `ps3-xmb-glass-dusk-millennium-0.2.3.zip` → thème Millennium (Steam bureau)
 
 **➜ [Guide d'installation pas à pas](#installation-pas-à-pas)** (Steam Deck, PC Big Picture, Steam bureau)
 
@@ -84,11 +84,11 @@ Le plus simple est d'installer directement depuis l'adresse :
 1. Paramètres de Decky → onglet **Développeur** → **Installer un plugin depuis une URL**.
 2. Saisissez :
    ```
-   https://github.com/LempereurTom/ps3-xmb/releases/download/v0.2.2/ps3-xmb-0.2.2.zip
+   https://github.com/LempereurTom/ps3-xmb/releases/download/v0.2.3/ps3-xmb-0.2.3.zip
    ```
 3. Validez, puis confirmez l'installation.
 
-Si vous préférez passer par le fichier : en mode bureau, téléchargez `ps3-xmb-0.2.2.zip` depuis la [release](https://github.com/LempereurTom/ps3-xmb/releases/latest). Ensuite, onglet **Développeur** → **Installer un plugin depuis un fichier ZIP** et choisissez-le dans *Téléchargements*.
+Si vous préférez passer par le fichier : en mode bureau, téléchargez `ps3-xmb-0.2.3.zip` depuis la [release](https://github.com/LempereurTom/ps3-xmb/releases/latest). Ensuite, onglet **Développeur** → **Installer un plugin depuis un fichier ZIP** et choisissez-le dans *Téléchargements*.
 
 **d. Activer l'accueil PS3**
 
@@ -136,7 +136,7 @@ Ces deux catégories lisent vos captures et enregistrements Steam ainsi que vos 
 
 **b. Ajouter le thème**
 
-1. Téléchargez **`ps3-xmb-glass-dusk-millennium-0.2.2.zip`** depuis la [release](https://github.com/LempereurTom/ps3-xmb/releases/latest).
+1. Téléchargez **`ps3-xmb-glass-dusk-millennium-0.2.3.zip`** depuis la [release](https://github.com/LempereurTom/ps3-xmb/releases/latest).
 2. Décompressez-le : vous obtenez un dossier **`PS3-XMB`**.
 3. Placez ce dossier dans le dossier des thèmes de Millennium :
    - **Windows** : `C:\Program Files (x86)\Steam\millennium\themes\`
@@ -194,6 +194,7 @@ Si la bibliothèque reste d'aspect Steam d'origine alors que le magasin est bien
   - **Informations d'un jeu** (□ ou Options → Informations) : temps de jeu, ces deux semaines, dernière session, date d'achat, taille, Metacritic, avis, et les actions du jeu.
   - **Téléchargements** : jeu en cours, progression, vitesse, temps restant, file d'attente.
   - Chaque panneau garde un accès à la page Steam complète.
+- **Fond du jeu désactivé** : la couleur du jeu sélectionné teinte discrètement la vague et le ciel.
 - **Amis et discussions** ouvre le panneau Contacts de Steam, habillé aux couleurs du XMB (police, verre, sélection en couleur d'accent) ; l'heure et les boutons du XMB se décalent pour ne pas passer dessous. Le menu STEAM reçoit le même habillage.
 
 Réglages : **Paramètres → Paramètres de thème** (couleur, panneaux, accent, fond du jeu, animation), **Paramètres système** (langue, touches), **Paramètres audio**, **Paramètres de jeu**. Les principaux sont aussi dans le menu rapide de Decky.
@@ -219,6 +220,8 @@ Installation : voir [Installer le thème bureau](#3-installer-le-thème-bureau-m
 
 - **Bureau** : le verre de Glass Dusk est un flou d'arrière-plan, recalculé quand le fond bouge. La vague y tourne donc à 20 i/s, et se met en pause quand Steam est réduit, n'a pas le focus (en jeu) ou passe en veille. Sur un petit PC : *Vague XMB : Fixe* (0 coût). Aucune lecture de style à chaque image.
 - **Big Picture (Millennium)** : pas de flou, vague à 30 i/s ; celle de l'arrière-plan s'arrête tant que le XMB (qui a la sienne) est affiché.
+- **Vague nette** : dessinée à la résolution réelle de l'écran (jusqu'à 2560 px de large), sur le bureau comme en Big Picture.
+- **Démarrage** : en ouvrant Big Picture, l'accueil de Steam n'apparaît jamais avant le XMB (le fond PS3 s'affiche le temps qu'il démarre).
 - **XMB** : canevas à mi-résolution (≤ 1100 px), dégradés et sprite pré-calculés (aucune allocation par image), 30 i/s, pause automatique ; les pulsations PS3 n'animent que l'opacité (compositeur, pas de repeint). L'accent est calculé une fois par jeu sur une image de 32×18 px et mis en cache.
 
 ## Développement

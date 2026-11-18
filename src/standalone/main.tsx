@@ -141,12 +141,17 @@ function StandaloneInput({ children, onCommand, label }: InputSurfaceProps) {
 }
 
 // ───────── mounting over the Big Picture home ─────────
+/** Re-checks at once whether the XMB should show (set by useHomeVisible; called after navigating). */
+let recheckHome: () => void = () => {};
+const xmbRoots = document.getElementsByClassName('xmb-root');   // live list: costs nothing to read
+
 function useHomeVisible() {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     const check = () => {
       // Decky's PS3 XMB already replaces the home: stand aside.
-      const decky = [...document.querySelectorAll('.xmb-root')].some(el => !el.closest('[data-ps3-standalone]'));
+      let decky = false;
+      for (const el of xmbRoots) if (!el.closest('[data-ps3-standalone]')) { decky = true; break; }
       // Big Picture's own route says whether this is the home. (.BasicHome is no guide: in the
       // real client it sits on the Big Picture root on every screen, so the XMB stayed over the
       // library, the store and every other screen it opened.)
@@ -154,11 +159,15 @@ function useHomeVisible() {
       const home = path !== undefined ? /^\/library\/home\/?$/.test(path) || path === '/' : !!document.querySelector('.BasicHome');
       setVisible(!sessionHidden && !decky && home && !document.hidden);
     };
+    recheckHome = () => { check(); setTimeout(check, 60); setTimeout(check, 180); };
     check();
-    const timer = setInterval(check, 400);
+    // The first decision is made: the boot cover of ps3/ps3-bpm.css (Steam's home hidden while
+    // Big Picture opens, so it never flashes before the XMB) can go.
+    requestAnimationFrame(() => document.documentElement.classList.add('ps3-xmb-settled'));
+    const timer = setInterval(check, 250);
     const unsubscribe = subscribe(check);
     document.addEventListener('visibilitychange', check);
-    return () => { clearInterval(timer); unsubscribe(); document.removeEventListener('visibilitychange', check); };
+    return () => { clearInterval(timer); unsubscribe(); document.removeEventListener('visibilitychange', check); recheckHome = () => {}; };
   }, []);
   return visible;
 }
@@ -175,11 +184,14 @@ const HIDE_STEAM_HOME = `
 function useSideMenus(container: HTMLElement) {
   useEffect(() => {
     let lastInset = '';
+    let lastAccent = '';
     const tick = () => {
+      // The XMB sets its accent inline on its root: read that, not the computed style (which
+      // would make the browser recompute styles on every tick).
       const xmb = container.querySelector<HTMLElement>('.xmb-root');
-      const style = xmb ? getComputedStyle(xmb) : null;
-      const accent = style?.getPropertyValue('--xmb-accent').trim() || '#5e90e4';
-      const accent2 = style?.getPropertyValue('--xmb-accent-2').trim() || accent;
+      const accent = xmb?.style.getPropertyValue('--xmb-accent').trim() || lastAccent || '#5e90e4';
+      const accent2 = xmb?.style.getPropertyValue('--xmb-accent-2').trim() || accent;
+      lastAccent = accent;
       dressSideWindows(accent, accent2);
       const quick = openSideMenu() === 2;
       if (quick) {
@@ -189,7 +201,7 @@ function useSideMenus(container: HTMLElement) {
       } else if (container.hasAttribute('data-ps3-side-open')) container.removeAttribute('data-ps3-side-open');
     };
     tick();
-    const timer = setInterval(tick, 300);
+    const timer = setInterval(tick, 400);
     return () => clearInterval(timer);
   }, [container]);
 }
@@ -209,22 +221,22 @@ function App({ platform, Xmb, container }: { platform: Platform; Xmb: typeof imp
 
 let root: Root | null = null;
 let starting = false;
-let homeSeenAt = 0;
 /** True once the XMB runs (or cannot ever run here); false means "look again later". */
 async function start(): Promise<boolean> {
   if (root || starting || (win as { __ps3XmbStandalone?: boolean }).__ps3XmbStandalone) return true;
   if (!/GamepadUIPopupWindowBody/.test(document.body?.className ?? '') && !/Big Picture/.test(document.title)) return false;
-  if (!document.getElementById('Main') || !document.querySelector('.BasicHome')) return false;   // not built yet
-  // Let Steam finish building Big Picture before adding anything to it.
-  if (!homeSeenAt) { homeSeenAt = Date.now(); return false; }
-  if (Date.now() - homeSeenAt < 1500) return false;
+  if (!document.getElementById('Main')) return false;           // Big Picture not built yet
   if (!borrowSteam()) return false;                             // Steam's stores not ready yet
   starting = true;
   (win as { __ps3XmbStandalone?: boolean }).__ps3XmbStandalone = true;
   try {
     // Loaded only now: @decky/ui reads Steam's webpack modules as it is evaluated.
     const [{ createSteamPlatform }, { Xmb }] = await Promise.all([import('../steam'), import('../Xmb')]);
-    const platform = createSteamPlatform({ media, status });
+    const base = createSteamPlatform({ media, status });
+    // Leaving the home from the XMB: give way at once instead of at the next check.
+    const leave = <A extends unknown[]>(fn: (...args: A) => unknown) => (...args: A) => { const result = fn(...args); recheckHome(); return result; };
+    const platform: Platform = { ...base, navigate: leave(base.navigate.bind(base)), details: leave(base.details.bind(base)),
+      launch: leave(base.launch.bind(base)) as Platform['launch'], gameAction: base.gameAction && leave(base.gameAction.bind(base)) as Platform['gameAction'] };
     const container = document.createElement('div');
     container.dataset.ps3Standalone = '';
     // Above everything Steam draws in #Main (the home's carousel builds stacking contexts of its
@@ -237,6 +249,7 @@ async function start(): Promise<boolean> {
     console.info(TAG, 'started');
   } catch (error) {
     console.error(TAG, 'could not start; Steam Home is left as it is', error);
+    document.documentElement.classList.add('ps3-xmb-settled');   // lift the boot cover
   }
   return true;
 }

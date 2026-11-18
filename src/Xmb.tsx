@@ -84,7 +84,7 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
   const [status, setStatus] = useState<Status>({ battery: null, charging: false });
   const [scale, setScale] = useState(1);
   const [backdropVisible, setBackdropVisible] = useState(false);
-  const [gamePair, setGamePair] = useState<AccentPair | null>(null);
+  const [gamePair, setGamePair] = useState<(AccentPair & { id: number }) | null>(null);
   // XMB side panel (profile, game information, downloads): how to build it, its cursor, and a
   // tick that rebuilds it every two seconds so live values (download progress, status) move.
   const [panelBuilder, setPanelBuilder] = useState<{ build: () => PanelData | undefined } | null>(null);
@@ -330,18 +330,21 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
   // Glass Dusk accent: the colours of the selected game's art. Read once the cursor rests on a
   // game (no work while scrolling through the list), cached per game, and kept after leaving
   // the game list, as Glass Dusk keeps the last game's colour.
-  const accentGame = settings.accent === 'game' ? selected?.game : undefined;
+  // Also read for the wave's tint when game backgrounds are off.
+  const accentGame = settings.accent === 'game' || !settings.gameBackground ? selected?.game : undefined;
   useEffect(() => {
     if (!accentGame) return;
     let cancelled = false;
     const timer = setTimeout(() => {
       void gameAccent(String(accentGame.id), [...accentGame.artwork, ...(accentGame.backgrounds ?? [])])
-        .then(pair => { if (!cancelled && pair) setGamePair(pair); });
+        .then(pair => { if (!cancelled && pair) setGamePair({ ...pair, id: accentGame.id }); });
     }, 350);
     return () => { cancelled = true; clearTimeout(timer); };
   }, [accentGame]);
   const ps3Pair = PS3_ACCENTS[resolvePalette(settings.palette)];
   const accentPair = settings.accent === 'game' && gamePair ? [gamePair.accent, gamePair.second] : ps3Pair;
+  // Game backgrounds off: the selected game still lends its colour, softly, to the wave and sky.
+  const tint = !settings.gameBackground && selected?.game && gamePair?.id === selected.game.id ? gamePair.accent : undefined;
 
   const selectCategory = (next: number) => {
     const clamped = clampSelection(next, CATEGORIES.length);
@@ -458,7 +461,7 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
 
   return <div ref={root} className={`xmb-root ${settings.panels === 'glass' ? 'xmb-glass' : 'xmb-classic'} ${settings.motion ? '' : 'xmb-still'}`}
     style={{ '--xmb-scale': scale, '--xmb-accent': accentPair[0], '--xmb-accent-2': accentPair[1] } as CSSProperties} data-category={category} data-depth={activeFolder || album ? 1 : category === 'settings' ? settingsPath.length : 0}>
-    <style>{XMB_CSS}</style><Waves palette={settings.palette} motion={settings.motion} paused={backdropVisible || !!viewerFile || !!menuItem || !!panel} />
+    <style>{XMB_CSS}</style><Waves palette={settings.palette} motion={settings.motion} tint={tint} paused={backdropVisible || !!viewerFile || !!menuItem || !!panel} />
     <GameBackdrop game={selected?.game} enabled={settings.gameBackground} resolve={platform.backgrounds} onVisible={setBackdropVisible} />
     <InputSurface onCommand={command} label="PS3 XMB">
       <div className="xmb-stage" aria-hidden={viewerFile ? true : undefined} inert={viewerFile ? true : undefined}>

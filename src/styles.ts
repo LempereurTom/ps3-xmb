@@ -23,6 +23,12 @@ export const XMB_CSS = XMB_FONT_CSS + String.raw`
   transition:background 1.5s ease; }
 .xmb-light { position:absolute; inset:0; background:radial-gradient(ellipse 60% 40% at 18% 12%, #ffffff1c, transparent 70%); }
 .xmb-wave-canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+/* With game backgrounds off, the selected game's colour lies softly in the sky (opacity only:
+   the gradient itself never changes while the cursor moves). */
+.xmb-tint { position:absolute; inset:0; opacity:0; transition:opacity 1.2s ease;
+  background:radial-gradient(70% 55% at 62% 58%,color-mix(in srgb,var(--xmb-tint) 55%,transparent),transparent 72%),
+    linear-gradient(180deg,transparent 30%,color-mix(in srgb,var(--xmb-tint) 18%,transparent)); }
+.xmb-tint.on { opacity:.42; }
 .xmb-night { position:absolute; inset:0; background:#000814; opacity:calc(var(--xmb-night,0) * .42); transition:opacity 4s ease; pointer-events:none; }
 .ps3-silver { --ps3-dark:#3b3f45; --ps3-mid:#8a9096; --ps3-light:#d9dde0; }
 .ps3-gold   { --ps3-dark:#4a3a06; --ps3-mid:#a68b1d; --ps3-light:#f0dc7a; }
@@ -149,6 +155,10 @@ export const XMB_CSS = XMB_FONT_CSS + String.raw`
 
 /* ---------- Game list: PS3 shows the game icon (ICON0) beside its title ---------- */
 .xmb-game-gallery .xmb-items,.xmb-media-gallery .xmb-items { clip-path:inset(0); }
+/* Rows fade out above the button legend instead of running under it (a mask: drawn once by the
+   compositor, nothing repaints while the list moves). */
+.xmb-game-gallery .xmb-items,.xmb-media-gallery .xmb-items,.xmb-settings-branch .xmb-items {
+  -webkit-mask-image:linear-gradient(to bottom,#000 0,#000 74%,transparent 89%); mask-image:linear-gradient(to bottom,#000 0,#000 74%,transparent 89%); }
 .xmb-game-gallery.xmb-nested .xmb-category-rail { top:13%; transform:translateX(-23%); }
 .xmb-game-gallery.xmb-nested .xmb-category span { display:none; }
 .xmb-game-gallery .xmb-breadcrumb { top:13%; left:10.8%; max-width:76%; font-size:2.1cqw; }
@@ -268,6 +278,10 @@ export const XMB_CSS = XMB_FONT_CSS + String.raw`
    button legend move out from under it. --xmb-side-inset is its width in screen pixels. ---------- */
 .xmb-status,.xmb-legend { transition:transform 260ms cubic-bezier(.2,.7,.25,1); }
 [data-ps3-side-open] .xmb-status,[data-ps3-side-open] .xmb-legend { transform:translateX(calc(-1 * var(--xmb-side-inset,0px) / var(--xmb-scale,1))); }
+/* Pushed aside, the clock no longer runs off the edge of the screen: it gets a rounded end. */
+.xmb-status { transition:transform 260ms cubic-bezier(.2,.7,.25,1),border-radius 260ms ease,padding 260ms ease; }
+[data-ps3-side-open] .xmb-status { border-right:1px solid #ffffff66; border-radius:3cqh; padding-right:1.6cqw; }
+.xmb-glass [data-ps3-side-open] .xmb-status, [data-ps3-side-open] .xmb-glass .xmb-status { border-right-color:rgba(255,255,255,.22); }
 
 /* ---------- Glass (from Glass Dusk): smoked glass, fine grain, edges lit in the accent ----------
    The accent pair (--xmb-accent, --xmb-accent-2) comes from the selected game's art, or the PS3
@@ -295,7 +309,8 @@ export const XMB_CSS = XMB_FONT_CSS + String.raw`
 .xmb-glass .xmb-game-gallery .xmb-item.has-art.selected .xmb-item-art { box-shadow:0 0 0 1px rgba(255,255,255,.9),0 0 18px color-mix(in srgb,var(--xmb-accent,#fff) 80%,transparent),0 6px 14px #000c; }
 .xmb-glass .xmb-media-gallery .xmb-item.has-art .xmb-item-art { border-radius:6px; }
 .xmb-glass .xmb-media-gallery .xmb-item.selected .xmb-item-copy { border-bottom-color:var(--xmb-accent,#fff); }
-.xmb-glass .xmb-legend button { padding:0 .7cqw 0 .25cqw; border-radius:999px; background:var(--xmb-grain),rgba(5,6,9,.35); box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); }
+.xmb-glass .xmb-legend button { padding:0 .7cqw 0 .25cqw; border-radius:999px; background:var(--xmb-grain),rgba(5,6,9,.86); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),0 4px 14px rgba(0,0,0,.35); }
+.xmb-classic .xmb-legend button { padding:0 .7cqw 0 .25cqw; border-radius:999px; background:rgba(0,0,0,.6); }
 .xmb-glass .xmb-backdrop:after { background:linear-gradient(90deg,#000a 0%,#0005 45%,#0001 85%),linear-gradient(0deg,#0009,transparent 45%,#0004),linear-gradient(135deg,color-mix(in srgb,var(--xmb-accent,#000) 18%,transparent),transparent 60%); }
 @keyframes xmb-level-in { from { opacity:0; transform:translateX(1.5cqw); } to { opacity:1; transform:translateX(0); } }
 @keyframes xmb-menu-in { from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:translateX(0); } }
