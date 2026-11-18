@@ -1,0 +1,16 @@
+{
+  "name": "PS3 XMB",
+  "author": "Tim (PSP XMB) — PS3 adaptation",
+  "flags": [],
+  "api_version": 1,
+  "publish": {
+    "tags": [
+      "theme",
+      "home",
+      "xmb",
+      "ps3"
+    ],
+    "description": "PS3-inspired XMB for Steam Deck and Big Picture: monthly colours, glowing wave, cross-media bar and your Steam library.",
+    "image": ""
+  }
+}

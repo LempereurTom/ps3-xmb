@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Banc d'essai bureau</title>
+<link rel="stylesheet" href="../PS3-XMB/css/root.css">
+<link rel="stylesheet" href="../PS3-XMB/css/steam.css">
+<link rel="stylesheet" href="../PS3-XMB/ps3/ps3.css">
+<style id="opts"></style>
+<style>
+  body { margin:0; height:100vh; color:#fff; font:15px "Segoe UI",sans-serif; }
+  #popup_target { position:relative; z-index:1; display:flex; gap:16px; padding:60px 24px; height:100vh; box-sizing:border-box; }
+  .pane { flex:1; border-radius:24px; background:var(--gd-glass-fill); backdrop-filter:blur(30px); border:var(--gd-glass-edge); box-shadow:var(--gd-glass-shadow); padding:24px; }
+  .btn { display:inline-block; margin-top:16px; padding:10px 22px; border-radius:999px; background:var(--gd-accent-fill); color:var(--gd-accent-ink,#fff); }
+</style></head>
+<body class="DesktopUI">
+<div id="gd-art"></div>
+<div id="popup_target"><div class="pane"><h2>Bibliothèque</h2><p>Panneau de verre fumé Glass Dusk</p><span class="btn">Jouer</span></div><div class="pane" style="flex:.45"><h3>Jeux</h3><p>Portal 2<br>Hades</p></div></div>
+<script>
+  const q = new URLSearchParams(location.search);
+  document.getElementById('opts').textContent = q.get('css') || '';
+  if (q.has('art')) { const a = document.getElementById('gd-art'); a.style.backgroundImage = 'url(https://shared.steamstatic.com/store_item_assets/steam/apps/620/library_hero.jpg)'; a.classList.add('on'); }
+  window.addEventListener('error', e => document.title = 'ERREUR ' + e.message);
+</script>
+<script src="../PS3-XMB/ps3/ps3.js"></script>
+</body></html>

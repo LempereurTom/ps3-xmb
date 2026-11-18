@@ -1,0 +1,737 @@
+{
+  "name": "Glass Dusk",
+  "description": "Smoked glass over the art of the game you have open: the client takes its accent colour from that art. Styles the library, store, menus, Big Picture and the in-game overlay.",
+  "author": "Yareli",
+  "version": "2.0.4",
+  "tags": [
+    "Dark",
+    "Glass",
+    "Dynamic",
+    "Big Picture"
+  ],
+  "github": {
+    "owner": "Yareli0i",
+    "repo_name": "glass-dusk"
+  },
+  "funding": {
+    "kofi": "yareli0i"
+  },
+  "header_image": "https://raw.githubusercontent.com/Yareli0i/glass-dusk/main/images/header.jpg",
+  "splash_image": "https://raw.githubusercontent.com/Yareli0i/glass-dusk/main/images/splash.jpg",
+  "Steam-WebKit": "css/webkit.css",
+  "RootColors": "css/root.css",
+  "Conditions": {
+    "Wallet balance": {
+      "description": "The balance in the top bar. Blurred, it shows when you point at it.",
+      "tab": "Look",
+      "default": "Show",
+      "values": {
+        "Show": {},
+        "Blur until hover": {
+          "TargetCss": {
+            "affects": [
+              ".*"
+            ],
+            "src": "css/options/wallet-blur.css"
+          }
+        }
+      }
+    },
+    "Theme language": {
+      "description": "Text the theme draws itself: home header, Big Picture chip, dates.",
+      "tab": "Look",
+      "default": "English",
+      "values": {
+        "English": {},
+        "Українська": {
+          "TargetCss": {
+            "affects": [
+              ".*"
+            ],
+            "src": "css/options/lang-uk.css"
+          }
+        },
+        "Français": {
+          "TargetCss": {
+            "affects": [
+              ".*"
+            ],
+            "src": "css/options/lang-fr.css"
+          }
+        }
+      }
+    },
+    "Background": {
+      "description": "What sits behind the glass.",
+      "tab": "Look",
+      "default": "Game art",
+      "values": {
+        "Game art": {},
+        "Meadow": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/bg-meadow.css"
+          }
+        },
+        "Plain dusk": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/bg-plain.css"
+          }
+        }
+      }
+    },
+    "Background art": {
+      "description": "How strongly the game art shows through.",
+      "tab": "Look",
+      "default": "Normal",
+      "values": {
+        "Normal": {},
+        "Subtle": {
+          "TargetCss": {
+            "affects": [
+              ".*"
+            ],
+            "src": "css/options/art-subtle.css"
+          }
+        },
+        "Vivid": {
+          "TargetCss": {
+            "affects": [
+              ".*"
+            ],
+            "src": "css/options/art-vivid.css"
+          }
+        }
+      }
+    },
+    "Accent colour": {
+      "description": "Colour of buttons and highlights. Game art: the colours of the game in view, and with none in view (store, community) the last one's. Fixed uses Accent from the Colors tab.",
+      "tab": "Look",
+      "default": "Game art",
+      "values": {
+        "Game art": {},
+        "Fixed": {
+          "TargetCss": {
+            "affects": [
+              ".*"
+            ],
+            "src": "css/options/accent-fixed.css"
+          }
+        }
+      }
+    },
+    "Accent style": {
+      "description": "Two-tone takes a second colour from the game art, close to the first and as bright, and runs the main buttons and the progress bars from one to the other. Solid is one colour.",
+      "tab": "Look",
+      "default": "Two-tone",
+      "values": {
+        "Two-tone": {},
+        "Solid": {
+          "TargetCss": {
+            "affects": [
+              ".*"
+            ],
+            "src": "css/options/accent-solid.css"
+          }
+        }
+      }
+    },
+    "Glass": {
+      "description": "How see-through the panels are.",
+      "tab": "Look",
+      "default": "Normal",
+      "values": {
+        "Normal": {},
+        "Denser": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/glass-dense.css"
+          }
+        },
+        "Sheerer": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/glass-sheer.css"
+          }
+        }
+      }
+    },
+    "Glass finish": {
+      "description": "The surface of the glass panels: a fine grain, and the edges that face the light lit in the accent. Plain is the smooth glass of earlier versions.",
+      "tab": "Look",
+      "default": "Grain and lit edge",
+      "values": {
+        "Grain and lit edge": {},
+        "Grain": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/finish-grain.css"
+          }
+        },
+        "Lit edge": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/finish-lit.css"
+          }
+        },
+        "Plain": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/finish-plain.css"
+          }
+        }
+      }
+    },
+    "Corners": {
+      "description": "Radius of panels and cards.",
+      "tab": "Look",
+      "default": "Normal",
+      "values": {
+        "Normal": {},
+        "Softer": {
+          "TargetCss": {
+            "affects": [
+              ".*"
+            ],
+            "src": "css/options/radius-soft.css"
+          }
+        },
+        "Sharper": {
+          "TargetCss": {
+            "affects": [
+              ".*"
+            ],
+            "src": "css/options/radius-sharp.css"
+          }
+        }
+      }
+    },
+    "Transitions": {
+      "description": "Opening another game: the accent flows from the old colour to the new one and the art behind the glass fades over. Instant changes both at once.",
+      "tab": "Look",
+      "default": "Flowing",
+      "values": {
+        "Flowing": {},
+        "Instant": {
+          "TargetCss": {
+            "affects": [
+              ".*"
+            ],
+            "src": "css/options/motion-off.css"
+          }
+        }
+      }
+    },
+    "Sign-in screen": {
+      "description": "The account chooser when Steam starts (Who's playing?): the art of the game you played last, the covers of your own games drifting past, the art of your games one after another, plain dusk or Steam's wall of covers, each with the theme's glass, or Steam's own look. It shows only if Steam asks which account to use.",
+      "tab": "Look",
+      "default": "Game art",
+      "values": {
+        "Game art": {},
+        "Your games": {
+          "TargetCss": {
+            "affects": [
+              ".*"
+            ],
+            "src": "css/options/login-games.css"
+          }
+        },
+        "Slideshow": {
+          "TargetCss": {
+            "affects": [
+              ".*"
+            ],
+            "src": "css/options/login-slides.css"
+          }
+        },
+        "Dusk": {
+          "TargetCss": {
+            "affects": [
+              ".*"
+            ],
+            "src": "css/options/login-dusk.css"
+          }
+        },
+        "Steam's wall": {
+          "TargetCss": {
+            "affects": [
+              ".*"
+            ],
+            "src": "css/options/login-wall.css"
+          }
+        },
+        "Steam": {
+          "TargetCss": {
+            "affects": [
+              ".*"
+            ],
+            "src": "css/options/login-steam.css"
+          }
+        }
+      }
+    },
+    "When idle": {
+      "description": "Left alone on the library, Steam becomes the art of the game in view, with its logo, the time and the date; the first move brings everything back. Never while something is downloading or a video is playing.",
+      "tab": "Look",
+      "default": "After 5 minutes",
+      "values": {
+        "After 5 minutes": {},
+        "After 2 minutes": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/still-2.css"
+          }
+        },
+        "After 15 minutes": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/still-15.css"
+          }
+        },
+        "Never": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/still-off.css"
+          }
+        }
+      }
+    },
+    "Library home": {
+      "description": "The theme's header (greeting, stats, Continue) or Steam's shelves only.",
+      "tab": "Library",
+      "default": "Theme",
+      "values": {
+        "Theme": {},
+        "Steam": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/home-steam.css"
+          }
+        }
+      }
+    },
+    "Home number: Games": {
+      "description": "Every game in the library, installed or not.",
+      "tab": "Library",
+      "default": "yes",
+      "values": {
+        "yes": {},
+        "no": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/stat-games-off.css"
+          }
+        }
+      }
+    },
+    "Home number: Hours played": {
+      "description": "Hours across the whole library.",
+      "tab": "Library",
+      "default": "yes",
+      "values": {
+        "yes": {},
+        "no": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/stat-hours-off.css"
+          }
+        }
+      }
+    },
+    "Home number: Hours, 2 weeks": {
+      "description": "Hours played in the last two weeks.",
+      "tab": "Library",
+      "default": "no",
+      "values": {
+        "no": {},
+        "yes": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/stat-two-weeks-on.css"
+          }
+        }
+      }
+    },
+    "Home number: Unplayed": {
+      "description": "Games you have never started.",
+      "tab": "Library",
+      "default": "no",
+      "values": {
+        "no": {},
+        "yes": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/stat-unplayed-on.css"
+          }
+        }
+      }
+    },
+    "Home number: Perfect games": {
+      "description": "Games with every achievement unlocked.",
+      "tab": "Library",
+      "default": "no",
+      "values": {
+        "no": {},
+        "yes": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/stat-perfect-on.css"
+          }
+        }
+      }
+    },
+    "Home number: On disk": {
+      "description": "Space taken in Steam's library folders, in GB.",
+      "tab": "Library",
+      "default": "yes",
+      "values": {
+        "yes": {},
+        "no": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/stat-disk-off.css"
+          }
+        }
+      }
+    },
+    "Home numbers: second line": {
+      "description": "A small line under each number: installed, in how many games, average completion, drives.",
+      "tab": "Library",
+      "default": "no",
+      "values": {
+        "no": {},
+        "yes": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/stat-sub-on.css"
+          }
+        }
+      }
+    },
+    "Home: two weeks in colour": {
+      "description": "A bar under the greeting: every game played in the last two weeks, as wide as its share of the hours and in its own colours. Point at a part to see the game and its hours; a click opens it.",
+      "tab": "Library",
+      "default": "yes",
+      "values": {
+        "yes": {},
+        "no": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/fortnight-off.css"
+          }
+        }
+      }
+    },
+    "Recently played shelf": {
+      "description": "The row of recently played games under the Continue card.",
+      "tab": "Library",
+      "default": "yes",
+      "values": {
+        "yes": {},
+        "no": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/recent-hide.css"
+          }
+        }
+      }
+    },
+    "Recently played: preview": {
+      "description": "Point at a cover in the recently played row: a card with the game's screenshots, its name and hours. The store's screenshots are fetched from Steam at that moment.",
+      "tab": "Library",
+      "default": "yes",
+      "values": {
+        "yes": {},
+        "no": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/recent-preview-off.css"
+          }
+        }
+      }
+    },
+    "Home games": {
+      "description": "Where the Continue card and the recently played row take their games: only what is installed on this machine, or everything in the library.",
+      "tab": "Library",
+      "default": "Installed",
+      "values": {
+        "Installed": {},
+        "Whole library": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/home-all.css"
+          }
+        }
+      }
+    },
+    "Continue card: achievements": {
+      "description": "Achievement progress of the game on the Continue card.",
+      "tab": "Library",
+      "default": "no",
+      "values": {
+        "no": {},
+        "yes": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/cont-ach-on.css"
+          }
+        }
+      }
+    },
+    "What's New shelf": {
+      "description": "Steam's What's New shelf on the library home.",
+      "tab": "Library",
+      "default": "no",
+      "values": {
+        "no": {},
+        "yes": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/whatsnew-show.css"
+          }
+        }
+      }
+    },
+    "Add shelf button": {
+      "description": "Steam's row for adding a shelf to the library home.",
+      "tab": "Library",
+      "default": "yes",
+      "values": {
+        "yes": {},
+        "no": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/add-shelf-hide.css"
+          }
+        }
+      }
+    },
+    "Game list side": {
+      "description": "Where the game list sits.",
+      "tab": "Library",
+      "default": "Right",
+      "values": {
+        "Right": {},
+        "Left": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/list-left.css"
+          }
+        }
+      }
+    },
+    "Game page: collection tags": {
+      "description": "The collections a game is in, shown at the top right of its art on the game page, as Steam does. A click opens the collection.",
+      "tab": "Library",
+      "default": "yes",
+      "values": {
+        "yes": {},
+        "no": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/collection-tags-off.css"
+          }
+        }
+      }
+    },
+    "Store: game list": {
+      "description": "Your game list beside the store and other web pages of the main window: off, pinned there, coming out when you point at the window's edge, or a rail of your last games' covers that opens into the list.",
+      "tab": "Library",
+      "default": "Off",
+      "values": {
+        "Off": {},
+        "Pinned": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/storelist-pinned.css"
+          }
+        },
+        "On hover": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/storelist-hover.css"
+          }
+        },
+        "Rail": {
+          "TargetCss": {
+            "affects": [
+              "^Steam$"
+            ],
+            "src": "css/options/storelist-rail.css"
+          }
+        }
+      }
+    },
+    "Big Picture": {
+      "description": "Cover: the focused game's art fills the screen and lends its colour.",
+      "tab": "Big Picture & overlay",
+      "default": "Cover",
+      "values": {
+        "Cover": {
+          "TargetCss": {
+            "affects": [
+              "GamepadUIPopupWindowBody"
+            ],
+            "src": "css/bigpicture.css"
+          }
+        },
+        "Steam": {}
+      }
+    },
+    "Big Picture home": {
+      "description": "Big art: the focused game's art, sharp, across the whole first screen with the carousel at its foot, as in Steam's Big Art Mode, whether or not that setting of Steam's (Settings → Home) is on. Steam's: the layout is left to that setting, over the theme's softened art.",
+      "tab": "Big Picture & overlay",
+      "default": "Big art",
+      "values": {
+        "Big art": {},
+        "Steam's": {
+          "TargetCss": {
+            "affects": [
+              "GamepadUIPopupWindowBody"
+            ],
+            "src": "css/options/bpm-home-steam.css"
+          }
+        }
+      }
+    },
+    "Big Picture hours chip": {
+      "description": "The focused game's numbers under the carousel, beside Steam's own label: time played, last played, achievements.",
+      "tab": "Big Picture & overlay",
+      "default": "yes",
+      "values": {
+        "yes": {},
+        "no": {
+          "TargetCss": {
+            "affects": [
+              "GamepadUIPopupWindowBody"
+            ],
+            "src": "css/options/bpm-chip-hide.css"
+          }
+        }
+      }
+    },
+    "Overlay background": {
+      "description": "Behind the Shift+Tab panels: a light veil or Steam's dark sheet.",
+      "tab": "Big Picture & overlay",
+      "default": "Transparent",
+      "values": {
+        "Transparent": {},
+        "Steam": {
+          "TargetCss": {
+            "affects": [
+              "^SP Overlay"
+            ],
+            "src": "css/options/overlay-steam.css"
+          }
+        }
+      }
+    },
+    "Overlay panels": {
+      "description": "Game Overview, browser and toolbar: smoked glass or Steam's own.",
+      "tab": "Big Picture & overlay",
+      "default": "Glass",
+      "values": {
+        "Glass": {
+          "TargetCss": {
+            "affects": [
+              ".*"
+            ],
+            "src": "css/options/overlay-glass.css"
+          }
+        },
+        "Steam": {}
+      }
+    },
+    "Plugins": {
+      "description": "Millennium plugins that draw their own interface (HLTB for Steam, Achievement Groups, Player Count, Extendium): in the theme's colours, or as the plugin ships them.",
+      "tab": "Plugins",
+      "default": "Theme",
+      "values": {
+        "Theme": {
+          "TargetCss": {
+            "affects": [".*"],
+            "src": "css/plugins.css"
+          }
+        },
+        "Plugin's own": {}
+      }
+    }
+  },
+  "Patches": [
+    {
+      "MatchRegexString": "^Steam$",
+      "TargetCss": "css/steam.css"
+    },
+    {
+      "MatchRegexString": ".*",
+      "TargetCss": "css/shared.css"
+    },
+    {
+      "MatchRegexString": ".*",
+      "TargetJs": "js/dusk.js"
+    },
+    {
+      "MatchRegexString": "^SP Overlay",
+      "TargetCss": "css/overlay.css"
+    }
+  ]
+}

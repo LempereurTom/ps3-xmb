@@ -1,0 +1,11 @@
+node_modules/
+dist/
+preview-dist/
+release/
+test-results/
+.cache/
+__pycache__/
+.DS_Store
+.deck-host
+test-results/
+*.log
