@@ -20,16 +20,21 @@
   // the Big Picture window itself has none of them.
   const shared = {};
   shared.webpackChunksteamui = { push([, , cb]) { const r = id => ({ router: { Router: router } })[id]; r.m = { router: true }; cb(r); } };
-  shared.SteamUIStore = { GetFocusedWindowInstance: () => ({
-    Navigate: p => log('nav ' + p), NavigateBack: () => {}, NavigateToSteamWeb: u => log('web ' + u),
+  // Big Picture's window instance, as read from a real client: LocationPathName is its route.
+  const gamepad = { LocationPathName: '/library/home',
+    Navigate(p) { log('nav ' + p); this.LocationPathName = p; }, NavigateBack() {}, NavigateToSteamWeb(u) { log('web ' + u); this.LocationPathName = '/steamweb'; },
     Navigator: { Chat: () => log('chat'), ExternalWeb: u => log('ext ' + u) },
-    MenuStore: { CloseSideMenus: () => {}, OpenSideMenu: () => {}, OpenQuickAccessMenu: () => {}, OpenMainMenu: () => {} },
-  }) };
+    MenuStore: { CloseSideMenus: () => {}, OpenSideMenu: () => {}, OpenQuickAccessMenu: t => log('qam ' + t), OpenMainMenu: () => {} } };
+  window.__gamepad = gamepad;
+  shared.SteamUIStore = { WindowStore: { GamepadUIMainWindowInstance: gamepad }, GetFocusedWindowInstance: () => ({ Navigate: p => log('WRONG WINDOW ' + p) }), OpenPowerMenu: () => log('power') };
   const apps = [[620, 'Portal 2'], [367520, 'Hollow Knight'], [413150, 'Stardew Valley']].map(([appid, name], i) => ({
     appid, display_name: name, app_type: 1, installed: true, rt_last_time_played: 1731600000 - i * 86400, gameid: String(appid) }));
   shared.collectionStore = { GetCollection: id => ({ visibleApps: id === 'type-games' ? apps : [] }), userCollections: [] };
   shared.appStore = { GetCustomLandcapeImageURLs: () => [], GetAppOverviewByAppID: id => apps.find(a => a.appid === id), GetCustomHeroImageURLs: () => [] };
-  shared.SteamClient = { Apps: { RunGame: id => log('run ' + id) }, Screenshots: { GetAllLocalScreenshots: async () => [] }, URL: {}, UI: { ExitBigPictureMode: () => log('exit-bp') } };
+  shared.SteamClient = { Apps: { RunGame: id => log('run ' + id) }, URL: {}, UI: { ExitBigPictureMode: () => log('exit-bp') },
+    Screenshots: { GetAllLocalScreenshots: async () => [{ nAppID: 620, hHandle: 1, nCreated: 1768409386, strCaption: '', strUrl: 'screenshots/620/screenshots/20260114174946_1.jpg' }] } };
+  // The popup's own SteamClient: present, but without most interfaces (as in the real client).
+  window.SteamClient = { Window: {} };
   Object.defineProperty(window, 'opener', { value: shared, configurable: true });
   window.addEventListener('error', e => { document.title = 'ERREUR ' + e.message; });
 </script>

@@ -29,7 +29,7 @@ export interface Settings {
   gameBackground: boolean;
   groupByFolders: boolean;
 }
-export const DEFAULT_SETTINGS: Settings = { enabled: false, palette: 'original', language: 'fr', glyphs: 'playstation', panels: 'glass', accent: 'game', sounds: true, motion: true, installedOnly: true, gameBackground: true, groupByFolders: true };
+export const DEFAULT_SETTINGS: Settings = { enabled: false, palette: 'original', language: 'fr', glyphs: 'playstation', panels: 'glass', accent: 'game', sounds: true, motion: true, installedOnly: false, gameBackground: true, groupByFolders: true };
 
 export interface Game {
   id: number;
@@ -61,8 +61,24 @@ export interface Platform {
   navigate: (destination: string) => void;
   user?: () => string | undefined;
   report?: (event: string, value: string | number) => void;
+  /** Side panels drawn by the XMB itself instead of opening a Steam page. */
+  profile?: () => ProfileInfo | undefined;
+  setPersonaState?: (state: PersonaState) => void;
+  gameInfo?: (game: Game) => GameInfo | undefined;
+  downloads?: () => DownloadsInfo | undefined;
 }
-export interface Item { id: string; title: string; subtitle?: string; description?: string; icon: IconName; artwork?: string[]; game?: Game; media?: MediaFile; opensLevel?: boolean; checked?: boolean; action: () => void }
+export type PersonaState = 0 | 1 | 3 | 7;   // offline, online, away, invisible (Steam's EPersonaState)
+export interface ProfileInfo { name: string; account?: string; avatar?: string; state: PersonaState; friendsOnline?: number; friends?: number; invites?: number; games?: number }
+export interface GameInfo { minutes?: number; minutesTwoWeeks?: number; lastPlayed?: number; purchased?: number; sizeOnDisk?: number; metacritic?: number; reviewPercent?: number; hero?: string }
+export interface DownloadsInfo { current?: { name: string; percent: number; bytesPerSecond: number; paused: boolean; etaSeconds?: number }; queued: number }
+export interface PanelRow { label: string; value: string }
+/** keepOpen: the panel stays and refreshes after the action (a status change), instead of closing. */
+export interface PanelAction { id: string; title: string; icon: IconName; description?: string; checked?: boolean; keepOpen?: boolean; perform: () => void | Promise<void> }
+/** An XMB side panel: a header (picture, title, subtitle), information rows and actions. */
+export interface PanelData { kind: string; title: string; subtitle?: string; image?: string; round?: boolean; icon: IconName; rows: PanelRow[]; actions: PanelAction[] }
+export interface Item { id: string; title: string; subtitle?: string; description?: string; icon: IconName; artwork?: string[]; game?: Game; media?: MediaFile; opensLevel?: boolean; checked?: boolean; action: () => void;
+  /** Opening this item shows an XMB side panel instead of running `action`. */
+  panel?: () => PanelData | undefined }
 
 export const CATEGORIES: Category[] = ['users', 'settings', 'photo', 'music', 'video', 'game', 'network', 'steam', 'friends'];
 export const HOME_CATEGORY = CATEGORIES.indexOf('game');

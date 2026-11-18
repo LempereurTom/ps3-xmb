@@ -18,6 +18,9 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { InputSurfaceProps } from '../Xmb';
 import { cleanSettings, type Command, type MediaAlbum, type MediaLibrary, type Platform, type Settings, type Status } from '../model';
 import { handleXmbKey } from '../input';
+import { steamClient } from '../steam-client';
+import { gamepadPath } from './decky-ui-shim';
+import { dressSideWindows, openSideMenu, quickAccessInset } from './side-menus';
 
 type SteamWindow = Window & Record<string, unknown>;
 const win = window as unknown as SteamWindow;
@@ -32,7 +35,13 @@ const listeners = new Set<() => void>();
 let current: Settings = (() => {
   try {
     const saved = localStorage.getItem(KEY);
-    if (saved) return { ...cleanSettings(JSON.parse(saved)), enabled: true };
+    if (saved) {
+      const value = JSON.parse(saved);
+      // 0.2.2: the whole library is shown by default (only installed games before, which read
+      // as "my library does not work"). Settings saved earlier take the new default once.
+      if (localStorage.getItem(KEY + '-v') !== '2') { value.installedOnly = false; localStorage.setItem(KEY + '-v', '2'); }
+      return { ...cleanSettings(value), enabled: true };
+    }
   } catch { /* unreadable: start from the defaults */ }
   // First run: the colour chosen in the theme's PS3 tab (ps3/colours/*.css), so the XMB and the
   // rest of Big Picture match out of the box. The XMB's own Theme Settings can change it later.
@@ -54,7 +63,7 @@ function updateSettings(value: Partial<Settings>) {
 interface Screenshot { nAppID: number; hHandle: number; nCreated: number; strCaption?: string; strUrl: string }
 async function media(kind: 'photo' | 'video'): Promise<MediaLibrary> {
   if (kind === 'video') return { base: '', albums: [] };   // recordings need the Decky worker
-  const api = (win.SteamClient as { Screenshots?: { GetAllLocalScreenshots?: () => Promise<Screenshot[]> } } | undefined)?.Screenshots;
+  const api = (steamClient() as unknown as { Screenshots?: { GetAllLocalScreenshots?: () => Promise<Screenshot[]> } } | undefined)?.Screenshots;
   if (!api?.GetAllLocalScreenshots) throw new Error('Steam screenshots are unavailable');
   const shots = await api.GetAllLocalScreenshots();
   const albums = new Map<string, MediaAlbum>();
@@ -62,8 +71,12 @@ async function media(kind: 'photo' | 'video'): Promise<MediaLibrary> {
     if (!shot?.strUrl) continue;
     const appId = String(shot.nAppID ?? '');
     const album = albums.get(appId) ?? { id: `screenshots/${appId}`, name: '', source: 'screenshots' as const, appId, entries: [] };
+    // strUrl is relative to Steam's local host ("screenshots/<app>/screenshots/<file>.jpg"), and
+    // Steam keeps a small copy of each under thumbnails/ (11 KB instead of 300).
+    const url = new URL(shot.strUrl, 'https://steamloopback.host/').href;
+    const thumb = url.replace(/\/([^/]+)$/, '/thumbnails/$1');
     album.entries.push({ id: `${appId}-${shot.hHandle}`, title: shot.strCaption || new Date(shot.nCreated * 1000).toLocaleString(), time: shot.nCreated,
-      format: 'JPG', url: shot.strUrl, thumb: shot.strUrl });
+      format: 'JPG', url, thumb });
     albums.set(appId, album);
   }
   const list = [...albums.values()];
@@ -134,8 +147,12 @@ function useHomeVisible() {
     const check = () => {
       // Decky's PS3 XMB already replaces the home: stand aside.
       const decky = [...document.querySelectorAll('.xmb-root')].some(el => !el.closest('[data-ps3-standalone]'));
-      const home = document.querySelector('.BasicHome');
-      setVisible(!sessionHidden && !decky && !!home && !document.hidden);
+      // Big Picture's own route says whether this is the home. (.BasicHome is no guide: in the
+      // real client it sits on the Big Picture root on every screen, so the XMB stayed over the
+      // library, the store and every other screen it opened.)
+      const path = gamepadPath();
+      const home = path !== undefined ? /^\/library\/home\/?$/.test(path) || path === '/' : !!document.querySelector('.BasicHome');
+      setVisible(!sessionHidden && !decky && home && !document.hidden);
     };
     check();
     const timer = setInterval(check, 400);
@@ -154,9 +171,33 @@ const HIDE_STEAM_HOME = `
   #MainNavMenu-Rest > #Footer { opacity: 0 !important; }
 `;
 
-function App({ platform, Xmb }: { platform: Platform; Xmb: typeof import('../Xmb').Xmb }) {
+/** Steam's side windows wear the XMB's dress; Quick Access pushes the clock and legend aside. */
+function useSideMenus(container: HTMLElement) {
+  useEffect(() => {
+    let lastInset = '';
+    const tick = () => {
+      const xmb = container.querySelector<HTMLElement>('.xmb-root');
+      const style = xmb ? getComputedStyle(xmb) : null;
+      const accent = style?.getPropertyValue('--xmb-accent').trim() || '#5e90e4';
+      const accent2 = style?.getPropertyValue('--xmb-accent-2').trim() || accent;
+      dressSideWindows(accent, accent2);
+      const quick = openSideMenu() === 2;
+      if (quick) {
+        const inset = `${quickAccessInset() + 16}px`;
+        if (inset !== lastInset) { container.style.setProperty('--xmb-side-inset', inset); lastInset = inset; }
+        if (!container.hasAttribute('data-ps3-side-open')) container.setAttribute('data-ps3-side-open', '');
+      } else if (container.hasAttribute('data-ps3-side-open')) container.removeAttribute('data-ps3-side-open');
+    };
+    tick();
+    const timer = setInterval(tick, 300);
+    return () => clearInterval(timer);
+  }, [container]);
+}
+
+function App({ platform, Xmb, container }: { platform: Platform; Xmb: typeof import('../Xmb').Xmb; container: HTMLElement }) {
   const settings = useSyncExternalStore(subscribe, getSettings, getSettings);
   const visible = useHomeVisible();
+  useSideMenus(container);
   if (!visible) return null;
   return <>
     {/* Steam's home stays in place under the XMB (it keeps Steam's focus, so the controller is
@@ -192,7 +233,7 @@ async function start(): Promise<boolean> {
     // Inside #Main, like a route: Steam's side menus and dialogs stay above it.
     (document.getElementById('Main') ?? document.body).appendChild(container);
     root = createRoot(container);
-    root.render(<App platform={platform} Xmb={Xmb} />);
+    root.render(<App platform={platform} Xmb={Xmb} container={container} />);
     console.info(TAG, 'started');
   } catch (error) {
     console.error(TAG, 'could not start; Steam Home is left as it is', error);

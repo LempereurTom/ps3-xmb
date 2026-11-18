@@ -9,7 +9,9 @@ const out = process.argv[2] ?? '.';
 const browser = await chromium.launch(process.env.PW_CHANNEL ? { channel: process.env.PW_CHANNEL } : {});
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const errors = [];
+const requested = [];   // what the page asked the network for (screenshot thumbnails)
 page.on('pageerror', e => errors.push(e.message));
+page.on('request', r => requested.push(r.url()));
 page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(m.text()); });
 // Vite's dev server rewrites scripts it serves; give the page the built file exactly as Millennium will.
 const bundle = await readFile(new URL('../desktop-theme/PS3-XMB/ps3/xmb.js', import.meta.url), 'utf8');
@@ -48,13 +50,26 @@ const stillGame = await category();
 await press(1); await page.waitForTimeout(300); // open «Jeux Steam»
 await page.screenshot({ path: `${out}/bpm-xmb.png` });
 await press(1); await page.waitForTimeout(200); // launch Portal 2
-const log = await page.evaluate(() => window.__steamLog.slice());
-await page.evaluate(() => document.querySelector('.BasicHome').remove());   // Steam leaves the home
+
+// Photo: screenshots come from the shared SteamClient, with absolute addresses and thumbnails.
+await press(2); await page.waitForTimeout(300);                               // leave «Jeux Steam»
+for (let i = 0; i < 3; i++) await press(11);                                // Game → Photo
+await page.waitForTimeout(600);
+const photo = await page.evaluate(() => ({ category: document.querySelector('.xmb-root').dataset.category, title: document.querySelector('.xmb-item.selected .xmb-title')?.textContent }));
+await press(1); await page.waitForTimeout(600);                               // open the album
+const thumb = requested.find(u => u.includes('steamloopback.host/screenshots/')) ?? null;
+await press(2); for (let i = 0; i < 3; i++) await press(12);                 // back to Game
+for (let i = 0; i < 3; i++) await press(12); await page.waitForTimeout(300);  // Game → Friends
+await press(1); await page.waitForTimeout(300);                               // Friends & Chat
+for (let i = 0; i < 3; i++) await press(11);                                // back to Game
+await press(10); await press(10);                                            // Game → «Bibliothèque de jeux» (no user collection here)
+await press(1); await page.waitForTimeout(700);                               // Steam leaves the home
 await page.waitForTimeout(700);
 const gone = await page.evaluate(() => !document.querySelector('.xmb-root'));
+const log = await page.evaluate(() => window.__steamLog.slice());
 await page.screenshot({ path: `${out}/bpm-other-screen.png` });
 
-const result = { passedDialog, cover, layers, start, blockedHome, afterRight, passedMenu, stillGame, log, gone, errors };
+const result = { photo, thumb, passedDialog, cover, layers, start, blockedHome, afterRight, passedMenu, stillGame, log, gone, errors };
 console.log(JSON.stringify(result));
 assert.deepEqual(errors, []);
 assert.ok(cover.xmbOnTop, "the XMB covers Steam's carousel");
@@ -69,6 +84,10 @@ assert.equal(afterRight, 'network');
 assert.ok(passedMenu, 'input aimed at a Steam menu is left alone');
 assert.equal(stillGame, 'game');
 assert.ok(log.includes('run 620'), 'Portal 2 launched through SteamClient.Apps.RunGame');
-assert.ok(gone, 'XMB gives way when Steam leaves the home');
+assert.ok(gone, 'XMB gives way when Steam leaves the home (route, not .BasicHome)');
+assert.ok(log.includes('nav /library'), "the library opens in Big Picture's own window");
+assert.ok(!log.some(l => l.startsWith('WRONG WINDOW')), 'navigation never goes to the focused desktop window');
+assert.ok(log.includes('qam 3'), 'Friends & Chat opens the Quick Access friends tab');
+assert.equal(thumb, 'https://steamloopback.host/screenshots/620/screenshots/thumbnails/20260114174946_1.jpg', 'screenshot thumbnail from the shared SteamClient, absolute');
 await browser.close();
 console.log('PASS');

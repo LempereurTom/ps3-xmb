@@ -88,6 +88,9 @@ export const XMB_CSS = XMB_FONT_CSS + String.raw`
 .xmb-item.has-art .xmb-item-art { height:26px; overflow:hidden; background:#0006; box-shadow:0 1px 3px #0008; }
 .xmb-item.has-art.selected .xmb-item-art { transform:scale(2.1); outline:1px solid #ffffffc0; }
 .xmb-item-art img { width:100%; height:100%; object-fit:cover; }
+/* Not installed: shown, as in Steam's library, but quieter (opening it offers to install). */
+.xmb-item.not-installed .xmb-item-art img { filter:saturate(.35) brightness(.72); }
+.xmb-item.not-installed:not(.selected) { opacity:.5; }
 .xmb-item-copy { position:relative; display:block; min-width:0; flex:1; margin-left:6.1cqw; text-shadow:var(--xmb-text-shadow); }
 .xmb-title,.xmb-subtitle { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .xmb-title { font-size:var(--xmb-label-size); line-height:1.25; }
@@ -240,6 +243,32 @@ export const XMB_CSS = XMB_FONT_CSS + String.raw`
 .xmb-live { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
 .xmb-still * { animation:none !important; transition:none !important; }
 @keyframes xmb-halo { 0%,100% { opacity:.3; } 50% { opacity:.9; } }
+/* ---------- Side panels (profile, game information, downloads): the Options frame, wider ---------- */
+.xmb-panel-frame { width:470px; }
+.xmb-panel { display:flex; flex-direction:column; }
+.xmb-menu { display:flex; flex-direction:column; }
+.xmb-menu .xmb-menu-list { flex:0 1 auto; min-height:0; }
+.xmb-menu .xmb-menu-description { flex:0 0 auto; }
+.xmb-menu .xmb-menu-hint { position:static; margin-top:auto; padding:16px 0 0 10px; flex:0 0 auto; }
+.xmb-panel .xmb-menu-list { max-height:none; flex:0 1 auto; min-height:0; }
+.xmb-panel-head { display:flex; align-items:center; gap:16px; margin:0 6px 18px; padding:0 4px 16px; border-bottom:1px solid #ffffff2e; }
+.xmb-panel-image { width:84px; height:84px; flex:0 0 84px; object-fit:cover; border-radius:10px; box-shadow:0 0 0 1px #ffffff40,0 6px 16px #0008; }
+.xmb-panel-image.round { border-radius:50%; box-shadow:0 0 0 2px color-mix(in srgb,var(--xmb-accent,#fff) 70%,#fff),0 0 18px color-mix(in srgb,var(--xmb-accent,#fff) 45%,transparent); }
+.xmb-panel-game .xmb-panel-image { width:150px; flex-basis:150px; height:70px; }
+.xmb-panel-icon { width:64px; height:64px; flex:0 0 64px; }
+.xmb-panel-heading { min-width:0; }
+.xmb-panel-heading h2 { margin:0; font-size:24px; font-weight:400; line-height:1.2; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+.xmb-panel-heading p { margin:4px 0 0; font-size:15px; opacity:.72; }
+.xmb-panel-rows { margin:0 10px 16px; display:grid; gap:9px; font-size:15px; }
+.xmb-panel-rows > div { display:flex; justify-content:space-between; gap:16px; }
+.xmb-panel-rows dt { opacity:.68; }
+.xmb-panel-rows dd { margin:0; text-align:right; font-weight:400; overflow-wrap:anywhere; }
+
+/* ---------- Steam's Quick Access panel (friends, chat…) open over the XMB: the clock and the
+   button legend move out from under it. --xmb-side-inset is its width in screen pixels. ---------- */
+.xmb-status,.xmb-legend { transition:transform 260ms cubic-bezier(.2,.7,.25,1); }
+[data-ps3-side-open] .xmb-status,[data-ps3-side-open] .xmb-legend { transform:translateX(calc(-1 * var(--xmb-side-inset,0px) / var(--xmb-scale,1))); }
+
 /* ---------- Glass (from Glass Dusk): smoked glass, fine grain, edges lit in the accent ----------
    The accent pair (--xmb-accent, --xmb-accent-2) comes from the selected game's art, or the PS3
    colour. Blur is used on the Options panel only: the wave is paused while it is open, so the

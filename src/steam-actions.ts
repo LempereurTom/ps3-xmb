@@ -1,5 +1,6 @@
 import { findModuleChild, Navigation, Router } from '@decky/ui';
 import type { Game, GameAction } from './model';
+import { steamClient } from './steam-client';
 
 /**
  * Use Steam's confirmation component, which invokes its own matching native
@@ -41,7 +42,7 @@ export function performGameAction(game: Game, action: GameAction) {
     // This is Steam's own install URI, also used by its current client UI.
     // It opens the native install flow for storage, licenses and downloads.
     // @decky/ui currently resolves SteamClient.URL to the DOM URL type.
-    const protocol = SteamClient.URL as unknown as { ExecuteSteamURL?: (url: string) => void };
+    const protocol = steamClient().URL as unknown as { ExecuteSteamURL?: (url: string) => void };
     if (typeof protocol.ExecuteSteamURL !== 'function') throw new Error('Steam installation is unavailable; open the game in Steam to manage it');
     protocol.ExecuteSteamURL(`steam://install/${game.id}`);
     return;

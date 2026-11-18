@@ -5,7 +5,7 @@ L'interface de la PlayStation 3 pour Steam, mariée au verre fumé et aux couleu
 
 Le **même XMB** existe en deux versions, selon l'outil que vous utilisez :
 
-| | Version Decky (`ps3-xmb-0.2.1.zip`) | Version Millennium (`ps3-xmb-glass-dusk-millennium-0.2.1.zip`) |
+| | Version Decky (`ps3-xmb-0.2.2.zip`) | Version Millennium (`ps3-xmb-glass-dusk-millennium-0.2.2.zip`) |
 |---|---|---|
 | Pour | **Steam Deck** (mode Jeu), Big Picture sur PC via Decky | **PC** (Windows / Linux) : Steam bureau **et** Big Picture |
 | Menu XMB PS3 à l'accueil | ✅ | ✅ (Big Picture) |
@@ -21,8 +21,8 @@ Le **même XMB** existe en deux versions, selon l'outil que vous utilisez :
 Basé sur [PSP XMB](https://github.com/timskap/psp-xmb) de Tim et [Glass Dusk](https://github.com/Yareli0i/glass-dusk) de Yareli (licences MIT).
 
 **Téléchargements : [dernière release](https://github.com/LempereurTom/ps3-xmb/releases/latest)**
-- `ps3-xmb-0.2.1.zip` → plugin Decky (XMB, Steam Deck + Big Picture PC)
-- `ps3-xmb-glass-dusk-millennium-0.2.1.zip` → thème Millennium (Steam bureau)
+- `ps3-xmb-0.2.2.zip` → plugin Decky (XMB, Steam Deck + Big Picture PC)
+- `ps3-xmb-glass-dusk-millennium-0.2.2.zip` → thème Millennium (Steam bureau)
 
 **➜ [Guide d'installation pas à pas](#installation-pas-à-pas)** (Steam Deck, PC Big Picture, Steam bureau)
 
@@ -84,11 +84,11 @@ Le plus simple est d'installer directement depuis l'adresse :
 1. Paramètres de Decky → onglet **Développeur** → **Installer un plugin depuis une URL**.
 2. Saisissez :
    ```
-   https://github.com/LempereurTom/ps3-xmb/releases/download/v0.2.1/ps3-xmb-0.2.1.zip
+   https://github.com/LempereurTom/ps3-xmb/releases/download/v0.2.2/ps3-xmb-0.2.2.zip
    ```
 3. Validez, puis confirmez l'installation.
 
-Si vous préférez passer par le fichier : en mode bureau, téléchargez `ps3-xmb-0.2.1.zip` depuis la [release](https://github.com/LempereurTom/ps3-xmb/releases/latest). Ensuite, onglet **Développeur** → **Installer un plugin depuis un fichier ZIP** et choisissez-le dans *Téléchargements*.
+Si vous préférez passer par le fichier : en mode bureau, téléchargez `ps3-xmb-0.2.2.zip` depuis la [release](https://github.com/LempereurTom/ps3-xmb/releases/latest). Ensuite, onglet **Développeur** → **Installer un plugin depuis un fichier ZIP** et choisissez-le dans *Téléchargements*.
 
 **d. Activer l'accueil PS3**
 
@@ -136,7 +136,7 @@ Ces deux catégories lisent vos captures et enregistrements Steam ainsi que vos 
 
 **b. Ajouter le thème**
 
-1. Téléchargez **`ps3-xmb-glass-dusk-millennium-0.2.1.zip`** depuis la [release](https://github.com/LempereurTom/ps3-xmb/releases/latest).
+1. Téléchargez **`ps3-xmb-glass-dusk-millennium-0.2.2.zip`** depuis la [release](https://github.com/LempereurTom/ps3-xmb/releases/latest).
 2. Décompressez-le : vous obtenez un dossier **`PS3-XMB`**.
 3. Placez ce dossier dans le dossier des thèmes de Millennium :
    - **Windows** : `C:\Program Files (x86)\Steam\millennium\themes\`
@@ -188,7 +188,13 @@ Si la bibliothèque reste d'aspect Steam d'origine alors que le magasin est bien
 - **Touches** : symboles PlayStation ✕ ○ △ □ ou Xbox/Steam A B X Y.
 - **Langues** : français (par défaut), anglais, russe.
 - **Utilisateurs** : profil, *Quitter Big Picture* (PC uniquement), *Éteindre le système*.
-- Bibliothèque Steam réelle, collections en dossiers, captures et enregistrements dans Photo/Vidéo, jeux non-Steam.
+- Toute la bibliothèque Steam (jeux non installés atténués, ils proposent l'installation), Favoris et collections en dossiers, captures dans Photo, jeux non-Steam. *Paramètres de jeu → Jeux affichés* permet de n'afficher que les jeux installés.
+- **Panneaux XMB** à la place des pages Steam, dans le même verre que le menu Options :
+  - **Profil** (Utilisateurs ou Amis → Mon profil) : avatar, pseudo, statut modifiable (En ligne, Absent, Invisible, Hors ligne), amis en ligne, invitations, jeux possédés.
+  - **Informations d'un jeu** (□ ou Options → Informations) : temps de jeu, ces deux semaines, dernière session, date d'achat, taille, Metacritic, avis, et les actions du jeu.
+  - **Téléchargements** : jeu en cours, progression, vitesse, temps restant, file d'attente.
+  - Chaque panneau garde un accès à la page Steam complète.
+- **Amis et discussions** ouvre le panneau Contacts de Steam, habillé aux couleurs du XMB (police, verre, sélection en couleur d'accent) ; l'heure et les boutons du XMB se décalent pour ne pas passer dessous. Le menu STEAM reçoit le même habillage.
 
 Réglages : **Paramètres → Paramètres de thème** (couleur, panneaux, accent, fond du jeu, animation), **Paramètres système** (langue, touches), **Paramètres audio**, **Paramètres de jeu**. Les principaux sont aussi dans le menu rapide de Decky.
 

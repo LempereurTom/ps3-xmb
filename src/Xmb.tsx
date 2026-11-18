@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from 'react';
-import { CATEGORIES, HOME_CATEGORY, clampSelection, visibleGames, words, type Command, type Game, type GameFolder, type Item, type Platform, type Settings, type Status } from './model';
+import { CATEGORIES, HOME_CATEGORY, clampSelection, visibleGames, words, type PanelData, type PersonaState, type Command, type Game, type GameFolder, type Item, type Platform, type Settings, type Status } from './model';
 import { MediaParents, MediaViewer, useMediaLibrary, type ViewerHandle } from './Media';
 import { ItemMenu, itemOptions } from './ItemMenu';
+import { InfoPanel } from './InfoPanel';
 import { SettingLabel, SettingMark, SettingsParent } from './SettingsBranch';
 import { preferenceTree, settingAncestors } from './preferences';
 import { handleXmbKey, useBrowserGestures } from './input';
@@ -84,6 +85,11 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
   const [scale, setScale] = useState(1);
   const [backdropVisible, setBackdropVisible] = useState(false);
   const [gamePair, setGamePair] = useState<AccentPair | null>(null);
+  // XMB side panel (profile, game information, downloads): how to build it, its cursor, and a
+  // tick that rebuilds it every two seconds so live values (download progress, status) move.
+  const [panelBuilder, setPanelBuilder] = useState<{ build: () => PanelData | undefined } | null>(null);
+  const [panelIndex, setPanelIndex] = useState(0);
+  const [panelTick, setPanelTick] = useState(0);
   const root = useRef<HTMLDivElement>(null);
   const alive = useRef(true);
   const busy = useRef(false);
@@ -194,13 +200,14 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
       }
     },
   }));
+  const downloadsPanelRef = useRef<(() => PanelData | undefined) | null>(null);
   const gameRoot = useMemo<Item[]>(() => {
     const rows = settings.groupByFolders
       ? folderLists.map((folder): Item => ({ id: folder.id, title: folder.name, subtitle: `${t.gameCount}: ${folder.games.length}`,
           icon: 'folder', opensLevel: true, action: () => setFolderId(folder.id) }))
       : listedGames.map(gameItem);
     return [...rows, rows.length ? library : { ...library, subtitle: t.noGamesHelp },
-      { id: 'downloads', title: t.downloads, icon: 'download', action: nav('downloads') }];
+      { id: 'downloads', title: t.downloads, icon: 'download', action: nav('downloads'), panel: () => downloadsPanelRef.current?.() }];
   }, [settings.groupByFolders, folderLists, t, listedGames, gameItem, library, nav]);
   const folderContents = useMemo<Item[]>(() => activeFolder?.games.length ? activeFolder.games.map(gameItem)
     : [{ id: 'empty-folder', title: t.emptyFolder, subtitle: t.folderHelp, icon: 'folder', action: () => setFolderId(null) }], [activeFolder, gameItem, t]);
@@ -223,9 +230,66 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
     subtitle: media.failed ? t.retry : media.library ? (category === 'photo' ? t.photosHelp : t.videosHelp) : undefined,
     icon: mediaKind ?? 'folder', action: media.retry,
   }];
+  const locale = LOCALES[settings.language];
+  const day = (seconds?: number) => seconds ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(seconds * 1000)) : t.never;
+  const duration = (minutes?: number) => minutes === undefined ? '—' : minutes < 60 ? `${minutes} ${t.minutes}` : `${Math.floor(minutes / 60)} ${t.hours} ${String(minutes % 60).padStart(2, '0')}`;
+  const bytes = (n: number) => n >= 1e9 ? `${(n / 1e9).toLocaleString(locale, { maximumFractionDigits: 1 })} Go` : `${Math.round(n / 1e6).toLocaleString(locale)} Mo`;
+  const stateName = (state: PersonaState) => ({ 0: t.offline, 1: t.online, 3: t.away, 7: t.invisible } as const)[state];
+  const profilePanel = (): PanelData | undefined => {
+    const p = platform.profile?.();
+    if (!p) return undefined;
+    const states: PersonaState[] = [1, 3, 7, 0];
+    return { kind: 'profile', title: p.name, subtitle: p.account && p.account !== p.name ? p.account : stateName(p.state), image: p.avatar, round: true, icon: 'profile',
+      rows: [
+        { label: t.status, value: stateName(p.state) },
+        ...(p.friendsOnline !== undefined ? [{ label: t.friendsOnline, value: p.friends !== undefined ? `${p.friendsOnline} / ${p.friends}` : String(p.friendsOnline) }] : []),
+        ...(p.invites ? [{ label: t.invites, value: String(p.invites) }] : []),
+        ...(p.games !== undefined ? [{ label: t.ownedGames, value: String(p.games) }] : []),
+      ],
+      actions: [
+        ...(platform.setPersonaState ? states.map(state => ({ id: `state-${state}`, title: stateName(state), icon: 'profile' as const, description: t.statusHelp,
+          checked: p.state === state, keepOpen: true, perform: () => platform.setPersonaState!(state) })) : []),
+        { id: 'friends-list', title: t.friendsList, icon: 'friends', description: t.friendsListHelp, perform: () => platform.navigate('chat') },
+        { id: 'full-profile', title: t.fullProfile, icon: 'network', description: t.fullProfileHelp, perform: () => platform.navigate('profile') },
+      ] };
+  };
+  const gamePanel = (game: Game): PanelData | undefined => {
+    const info = platform.gameInfo?.(game);
+    if (!info) return undefined;
+    const rows = [
+      { label: t.playtime, value: duration(info.minutes) },
+      ...(info.minutesTwoWeeks ? [{ label: t.twoWeeks, value: duration(info.minutesTwoWeeks) }] : []),
+      { label: t.lastSession, value: day(info.lastPlayed) },
+      ...(info.purchased ? [{ label: t.purchased, value: day(info.purchased) }] : []),
+      ...(info.sizeOnDisk ? [{ label: t.size, value: bytes(info.sizeOnDisk) }] : []),
+      ...(info.metacritic ? [{ label: t.metacritic, value: String(info.metacritic) }] : []),
+      ...(info.reviewPercent ? [{ label: t.reviews, value: `${info.reviewPercent} %` }] : []),
+    ];
+    return { kind: 'game', title: game.name, subtitle: game.installed || game.shortcut ? t.ready : t.notInstalled, image: game.artwork[0], icon: 'game', rows,
+      actions: itemOptions(gameItem(game), platform, settings.language).filter(option => option.id !== 'details')
+        .concat([{ id: 'game-page', title: t.gamePage, icon: 'info', description: t.gamePageHelp, perform: () => platform.details(game) }]) };
+  };
+  const downloadsPanel = (): PanelData | undefined => {
+    const d = platform.downloads?.();
+    if (!d) return undefined;
+    const c = d.current;
+    const rows = c ? [
+      { label: t.downloadNow, value: c.name },
+      { label: t.progress, value: `${Math.floor(c.percent)} %` },
+      { label: c.paused ? t.pausedLabel : t.speed, value: c.paused ? t.yes : `${(c.bytesPerSecond / 1e6).toLocaleString(locale, { maximumFractionDigits: 1 })} Mo/s` },
+      ...(c.etaSeconds !== undefined && !c.paused ? [{ label: t.remaining, value: duration(Math.max(1, Math.round(c.etaSeconds / 60))) }] : []),
+      { label: t.queue, value: String(d.queued) },
+    ] : [{ label: t.downloadNow, value: t.noDownload }, ...(d.queued ? [{ label: t.queue, value: String(d.queued) }] : [])];
+    return { kind: 'downloads', title: t.downloads, icon: 'download', rows,
+      actions: [{ id: 'steam-downloads', title: t.openDownloads, icon: 'download', description: t.openDownloadsHelp, perform: () => platform.navigate('downloads') }] };
+  };
+  const withPanel = (item: Item, build: () => PanelData | undefined): Item => ({ ...item, panel: build });
+  downloadsPanelRef.current = downloadsPanel;
+  const downloadsItem = withPanel({ id: 'downloads', title: t.downloads, icon: 'download', action: nav('downloads') }, downloadsPanel);
+
   const lists: Record<string, Item[]> = {
     users: [
-      { id: 'user', title: platform.user?.() || t.user, subtitle: t.userHelp, icon: 'users', action: nav('profile') },
+      withPanel({ id: 'user', title: platform.profile?.()?.name || platform.user?.() || t.user, subtitle: t.userHelp, icon: 'users', action: nav('profile') }, profilePanel),
       ...(status.pc ? [{ id: 'exit-big-picture', title: t.exitBp, subtitle: t.exitBpHelp, icon: 'exit' as const, action: nav('exitbp') }] : []),
       { id: 'power', title: t.power, subtitle: t.powerHelp, icon: 'power', action: nav('power') },
     ],
@@ -237,14 +301,14 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
     network: [
       { id: 'browser', title: t.browser, subtitle: t.browserHelp, icon: 'browser', action: nav('browser') },
       { id: 'internet', title: t.internet, icon: 'network', action: nav('internet') },
-      { id: 'downloads', title: t.downloads, icon: 'download', action: nav('downloads') },
+      downloadsItem,
     ],
     steam: [
       { id: 'store', title: t.store, icon: 'store', action: nav('store') },
       { id: 'community', title: t.community, icon: 'network', action: nav('community') },
       { id: 'points', title: t.points, icon: 'steam', action: nav('points') },
     ],
-    friends: [{ id: 'chat', title: t.chat, icon: 'friends', action: nav('chat') }, { id: 'profile', title: t.profile, icon: 'profile', action: nav('profile') }],
+    friends: [{ id: 'chat', title: t.chat, icon: 'friends', action: nav('chat') }, withPanel({ id: 'profile', title: t.profile, icon: 'profile', action: nav('profile') }, profilePanel)],
   };
   if (category === 'game' && loading) lists.game = [{ id: 'loading', title: t.loading, icon: 'memory', action: () => { void refresh(); } }];
   if (category === 'game' && loadError) lists.game = [{ id: 'retry', title: t.loadError, subtitle: t.retry, icon: 'info', action: () => { void refresh(); } }, library];
@@ -309,15 +373,57 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
   };
   const closeMenu = () => { playSound('menuClose', settings.sounds); setMenuTarget(null); };
   const activateMenu = (i: number) => {
+    const game = menuItem?.game;
+    if (options[i]?.id === 'details' && game && platform.gameInfo) {
+      setMenuTarget(null);
+      if (openPanel(() => gamePanel(game))) return;
+    }
     playSound('enter', settings.sounds);
     setMenuTarget(null);
     if (menuItem?.game) run(options[i].perform);
     else options[i].perform();
   };
-  const openItem = (item: Item) => { playSound('enter', settings.sounds); item.action(); };
+  const panel = useMemo(() => panelBuilder?.build(), [panelBuilder, panelTick, settings.language]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!panelBuilder) return;
+    const timer = setInterval(() => setPanelTick(n => n + 1), 2000);
+    return () => clearInterval(timer);
+  }, [panelBuilder]);
+  useEffect(() => { if (panelBuilder && !panel) setPanelBuilder(null); }, [panelBuilder, panel]);
+  const openPanel = (build: () => PanelData | undefined) => {
+    const data = build();
+    if (!data) return false;
+    playSound('menuOpen', settings.sounds);
+    const first = data.actions.findIndex(action => action.checked);
+    setPanelIndex(first >= 0 ? first : 0);
+    setPanelBuilder({ build });
+    return true;
+  };
+  const closePanel = () => { playSound('menuClose', settings.sounds); setPanelBuilder(null); };
+  const activatePanel = (i: number) => {
+    const action = panel?.actions[i];
+    if (!action) return;
+    playSound('enter', settings.sounds);
+    if (!action.keepOpen) setPanelBuilder(null);
+    run(async () => { await action.perform(); if (action.keepOpen) setTimeout(() => setPanelTick(n => n + 1), 400); });
+  };
+  const openItem = (item: Item) => {
+    if (item.panel && openPanel(item.panel)) return;   // falls back to the Steam page without data
+    playSound('enter', settings.sounds);
+    item.action();
+  };
   const command = (cmd: Command) => {
     platform.report?.('last_input', cmd);
     if (viewerFile) { viewer.current?.command(cmd); return; }
+    if (panel) {
+      if (cmd === 'back' || cmd === 'menu') closePanel();
+      else if (cmd === 'confirm') activatePanel(clampSelection(panelIndex, panel.actions.length));
+      else if (cmd === 'up' || cmd === 'down') {
+        const next = clampSelection(panelIndex + (cmd === 'up' ? -1 : 1), panel.actions.length);
+        if (next !== panelIndex) { playSound('move', settings.sounds); setPanelIndex(next); }
+      }
+      return;
+    }
     if (menuItem) {
       if (cmd === 'menu' || cmd === 'back') closeMenu();
       else if (cmd === 'confirm') activateMenu(activeMenuIndex);
@@ -333,7 +439,10 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
     else if (cmd === 'back' || (nested && cmd === 'left')) goBack();
     else if (nested && cmd === 'right') { if (selected.opensLevel) openItem(selected); }
     else if (cmd === 'left' || cmd === 'right') selectCategory(categoryIndex + (cmd === 'left' ? -1 : 1));
-    else if (cmd === 'details' && selected.game) run(() => platform.details(selected.game!));
+    else if (cmd === 'details' && selected.game) {
+      const game = selected.game;
+      if (!(platform.gameInfo && openPanel(() => gamePanel(game)))) run(() => platform.details(game));
+    }
   };
   const gestures = useBrowserGestures(command);
   const breadcrumb = album ? [t[category], album.title] : activeFolder ? [t.game, activeFolder.name] : [t.settings, ...ancestors.map(node => node.title)];
@@ -349,7 +458,7 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
 
   return <div ref={root} className={`xmb-root ${settings.panels === 'glass' ? 'xmb-glass' : 'xmb-classic'} ${settings.motion ? '' : 'xmb-still'}`}
     style={{ '--xmb-scale': scale, '--xmb-accent': accentPair[0], '--xmb-accent-2': accentPair[1] } as CSSProperties} data-category={category} data-depth={activeFolder || album ? 1 : category === 'settings' ? settingsPath.length : 0}>
-    <style>{XMB_CSS}</style><Waves palette={settings.palette} motion={settings.motion} paused={backdropVisible || !!viewerFile || !!menuItem} />
+    <style>{XMB_CSS}</style><Waves palette={settings.palette} motion={settings.motion} paused={backdropVisible || !!viewerFile || !!menuItem || !!panel} />
     <GameBackdrop game={selected?.game} enabled={settings.gameBackground} resolve={platform.backgrounds} onVisible={setBackdropVisible} />
     <InputSurface onCommand={command} label="PS3 XMB">
       <div className="xmb-stage" aria-hidden={viewerFile ? true : undefined} inert={viewerFile ? true : undefined}>
@@ -375,7 +484,7 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
             // the rail recedes and the rows sit equally far above and below the cursor.
             const y = offsetY(delta, itemIndex);
             return <button key={`${selectionKey}/${item.id}`} id={`xmb-item-${item.id}`} role="option" aria-selected={delta === 0} tabIndex={-1}
-              className={`xmb-item ${delta === 0 ? 'selected' : ''} ${item.game || item.media ? 'has-art' : ''}`} aria-hidden={!palettePicker && (delta < (settingGroup ? -5 : -2) || delta > 6) || undefined}
+              className={`xmb-item ${delta === 0 ? 'selected' : ''} ${item.game || item.media ? 'has-art' : ''} ${item.game && !item.game.installed && !item.game.shortcut ? 'not-installed' : ''}`} aria-hidden={!palettePicker && (delta < (settingGroup ? -5 : -2) || delta > 6) || undefined}
               style={{ transform: `translateY(${y}cqh)` }}
               onMouseDown={e => e.preventDefault()} onClick={() => delta === 0 ? openItem(item) : selectItem(itemIndex)}
               onContextMenu={e => {
@@ -394,7 +503,7 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
         </div>
         </div>
         {folderError && category === 'game' && settings.groupByFolders && !activeFolder && <div className="xmb-collections-notice" role="status">{t.folderUnavailable}</div>}
-        {!menuItem && <div className="xmb-legend" onMouseDown={e => e.preventDefault()}>
+        {!menuItem && !panel && <div className="xmb-legend" onMouseDown={e => e.preventDefault()}>
           <button tabIndex={-1} onClick={() => command('confirm')}><Glyph action="confirm" glyphs={settings.glyphs} />{t.enter}</button>
           {nested && <button tabIndex={-1} onClick={() => command('back')}><Glyph action="back" glyphs={settings.glyphs} />{t.back}</button>}
           {selected?.game && <button tabIndex={-1} onClick={() => command('details')}><Glyph action="details" glyphs={settings.glyphs} />{t.details}</button>}
@@ -407,6 +516,7 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
         language={settings.language} previous={index > 0} next={index + 1 < items.length} step={delta => selectItem(index + delta)}
         close={() => { playSound('back', settings.sounds); setViewing(false); root.current?.querySelector<HTMLElement>('.xmb-input')?.focus({ preventScroll: true }); }} />}
       {menuItem && <ItemMenu item={menuItem} options={options} index={activeMenuIndex} activate={activateMenu} close={closeMenu} language={settings.language} glyphs={settings.glyphs} />}
+      {panel && !menuItem && <InfoPanel panel={panel} index={clampSelection(panelIndex, panel.actions.length)} activate={activatePanel} close={closePanel} language={settings.language} glyphs={settings.glyphs} />}
     </InputSurface>
   </div>;
 }

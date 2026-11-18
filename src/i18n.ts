@@ -1,6 +1,14 @@
 import type { Language } from './model';
 
 const en = {
+  status: 'Status', online: 'Online', away: 'Away', invisible: 'Invisible', offline: 'Offline',
+  friendsOnline: 'Friends online', invites: 'Pending invites', ownedGames: 'Games owned', friendsList: 'Friends List',
+  friendsListHelp: 'Open your friends and chats.', fullProfile: 'Full Steam Profile', fullProfileHelp: 'Open your profile page in Steam.',
+  statusHelp: 'Change how your friends see you.', playtime: 'Play time', twoWeeks: 'Last two weeks', lastSession: 'Last session',
+  purchased: 'Purchased', size: 'Size on disk', metacritic: 'Metacritic', reviews: 'Positive reviews', never: 'Never',
+  gamePage: 'Steam Game Page', gamePageHelp: 'Open this game’s full page in Steam.', downloadNow: 'Downloading', progress: 'Progress',
+  speed: 'Speed', pausedLabel: 'Paused', queue: 'In queue', noDownload: 'Nothing is downloading', openDownloads: 'Steam Downloads',
+  openDownloadsHelp: 'Open the download queue in Steam.', hours: 'h', minutes: 'min', yes: 'Yes', remaining: 'Time left',
   panels: 'Panels', panelsHelp: 'Smoked glass panels from Glass Dusk, or the PS3’s own dark panels.', glass: 'Glass (Glass Dusk)', classic: 'PS3 classic',
   accent: 'Accent Colour', accentHelp: 'Highlights take the colours of the selected game’s art, or the PS3 theme colour.', accentGame: 'Game art', accentPs3: 'PS3 colour',
   users: 'Users', settings: 'Settings', photo: 'Photo', music: 'Music', video: 'Video', game: 'Game', network: 'Network', steam: 'Steam Network', friends: 'Friends',
@@ -43,6 +51,14 @@ const en = {
 export type Words = typeof en;
 
 const fr: Words = {
+  status: 'Statut', online: 'En ligne', away: 'Absent', invisible: 'Invisible', offline: 'Hors ligne',
+  friendsOnline: 'Amis en ligne', invites: 'Invitations en attente', ownedGames: 'Jeux possédés', friendsList: 'Liste d’amis',
+  friendsListHelp: 'Ouvrir vos amis et vos discussions.', fullProfile: 'Profil Steam complet', fullProfileHelp: 'Ouvrir votre page de profil dans Steam.',
+  statusHelp: 'Choisir comment vos amis vous voient.', playtime: 'Temps de jeu', twoWeeks: 'Ces deux semaines', lastSession: 'Dernière session',
+  purchased: 'Acheté le', size: 'Taille sur le disque', metacritic: 'Metacritic', reviews: 'Évaluations positives', never: 'Jamais',
+  gamePage: 'Page du jeu dans Steam', gamePageHelp: 'Ouvrir la page complète de ce jeu dans Steam.', downloadNow: 'En cours', progress: 'Progression',
+  speed: 'Vitesse', pausedLabel: 'En pause', queue: 'En file d’attente', noDownload: 'Aucun téléchargement en cours', openDownloads: 'Téléchargements Steam',
+  openDownloadsHelp: 'Ouvrir la file de téléchargement de Steam.', hours: 'h', minutes: 'min', yes: 'Oui', remaining: 'Temps restant',
   panels: 'Panneaux', panelsHelp: 'Panneaux en verre fumé de Glass Dusk, ou panneaux sombres de la PS3.', glass: 'Verre (Glass Dusk)', classic: 'PS3 classique',
   accent: 'Couleur d’accent', accentHelp: 'Les surbrillances prennent les couleurs de l’art du jeu sélectionné, ou la couleur du thème PS3.', accentGame: 'Art du jeu', accentPs3: 'Couleur PS3',
   users: 'Utilisateurs', settings: 'Paramètres', photo: 'Photo', music: 'Musique', video: 'Vidéo', game: 'Jeu', network: 'Réseau', steam: 'Steam Network', friends: 'Amis',
@@ -84,6 +100,14 @@ const fr: Words = {
 };
 
 const ru: Words = {
+  status: 'Статус', online: 'В сети', away: 'Нет на месте', invisible: 'Невидимка', offline: 'Не в сети',
+  friendsOnline: 'Друзья в сети', invites: 'Приглашения', ownedGames: 'Игр в библиотеке', friendsList: 'Список друзей',
+  friendsListHelp: 'Открыть друзей и чаты.', fullProfile: 'Профиль Steam', fullProfileHelp: 'Открыть страницу профиля в Steam.',
+  statusHelp: 'Как вас видят друзья.', playtime: 'Время в игре', twoWeeks: 'За две недели', lastSession: 'Последний запуск',
+  purchased: 'Куплено', size: 'Размер на диске', metacritic: 'Metacritic', reviews: 'Положительные обзоры', never: 'Никогда',
+  gamePage: 'Страница игры в Steam', gamePageHelp: 'Открыть полную страницу игры в Steam.', downloadNow: 'Загружается', progress: 'Прогресс',
+  speed: 'Скорость', pausedLabel: 'На паузе', queue: 'В очереди', noDownload: 'Ничего не загружается', openDownloads: 'Загрузки Steam',
+  openDownloadsHelp: 'Открыть очередь загрузок Steam.', hours: 'ч', minutes: 'мин', yes: 'Да', remaining: 'Осталось',
   panels: 'Панели', panelsHelp: 'Дымчатое стекло Glass Dusk или тёмные панели PS3.', glass: 'Стекло (Glass Dusk)', classic: 'Классика PS3',
   accent: 'Цвет акцента', accentHelp: 'Подсветка в цветах обложки игры или в цвете темы PS3.', accentGame: 'Обложка игры', accentPs3: 'Цвет PS3',
   users: 'Пользователи', settings: 'Настройки', photo: 'Фото', music: 'Музыка', video: 'Видео', game: 'Игра', network: 'Сеть', steam: 'Steam Network', friends: 'Друзья',

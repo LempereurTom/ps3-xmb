@@ -23,10 +23,22 @@ interface UIStore {
 }
 
 const store = (): UIStore | undefined => (window as unknown as { SteamUIStore?: UIStore }).SteamUIStore;
+/** Big Picture's own window first: the focused one can be the desktop window behind it. */
 function focused(): WindowInstance | undefined {
   const ui = store();
-  try { return ui?.GetFocusedWindowInstance?.() ?? ui?.WindowStore?.GamepadUIMainWindowInstance ?? ui?.WindowStore?.SteamUIWindows?.[0]; }
-  catch { return ui?.WindowStore?.GamepadUIMainWindowInstance; }
+  const gamepad = ui?.WindowStore?.GamepadUIMainWindowInstance;
+  if (gamepad) return gamepad;
+  try { return ui?.GetFocusedWindowInstance?.() ?? ui?.WindowStore?.SteamUIWindows?.[0]; }
+  catch { return undefined; }
+}
+
+/** Big Picture's current route ("/library/home" on the home), or undefined if unknown. */
+export function gamepadPath(): string | undefined {
+  const gamepad = store()?.WindowStore?.GamepadUIMainWindowInstance as (WindowInstance & { LocationPathName?: unknown }) | undefined;
+  try {
+    const value = typeof gamepad?.LocationPathName === 'function' ? (gamepad.LocationPathName as Fn)() : gamepad?.LocationPathName;
+    return typeof value === 'string' ? value : undefined;
+  } catch { return undefined; }
 }
 const call = (owner: object | undefined, name: string, ...args: unknown[]) => {
   const fn = owner && (owner as Record<string, unknown>)[name];
@@ -48,6 +60,7 @@ export const Navigation = {
   NavigateToExternalWeb: (url: string) => call(focused()?.Navigator, 'ExternalWeb', url),
   NavigateToChat: () => call(focused()?.Navigator, 'Chat'),
   CloseSideMenus: () => { try { call(focused()?.MenuStore, 'CloseSideMenus'); } catch { /* nothing open */ } },
+  OpenQuickAccessMenu: (tab?: number) => call(focused()?.MenuStore, 'OpenQuickAccessMenu', tab),
   OpenPowerMenu: (...args: unknown[]) => call(store(), 'OpenPowerMenu', ...args),
 };
 

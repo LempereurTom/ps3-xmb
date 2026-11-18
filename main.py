@@ -8,7 +8,7 @@ import sys
 import tempfile
 import time
 
-DEFAULTS = {"enabled": False, "palette": "original", "language": "fr", "glyphs": "playstation", "panels": "glass", "accent": "game", "sounds": True, "motion": True, "installedOnly": True, "gameBackground": True, "groupByFolders": True}
+DEFAULTS = {"enabled": False, "palette": "original", "language": "fr", "glyphs": "playstation", "panels": "glass", "accent": "game", "sounds": True, "motion": True, "installedOnly": False, "gameBackground": True, "groupByFolders": True}
 PALETTES = ("original", "silver", "gold", "lime", "pink", "green", "purple", "teal", "sky", "blue", "violet", "brown", "red", "black")
 LANGUAGES = ("fr", "en", "ru")
 GLYPHS = ("playstation", "xbox")
