@@ -86,7 +86,11 @@ const DIRECTIONS = new Set<Command>(['up', 'down', 'left', 'right']);
 const ours = (target: EventTarget | null) => {
   const el = target as Element | null;
   if (!el || typeof el.closest !== 'function') return target === document || target === window;
-  return !!(el.closest('[data-ps3-standalone]') || el.closest('.BasicHome')) || el === document.body || el === document.documentElement;
+  // In the real client the whole Big Picture root carries .BasicHome, so the home is "#Main",
+  // and Steam's dialogs (.FullModalOverlay: uninstall, power menu) keep their own input.
+  if (el.closest('[data-ps3-standalone]')) return true;
+  if (el.closest('.FullModalOverlay') || el.closest('#header')) return false;
+  return !!el.closest('#Main') || el === document.body || el === document.documentElement;
 };
 
 function StandaloneInput({ children, onCommand, label }: InputSurfaceProps) {
@@ -142,9 +146,12 @@ function useHomeVisible() {
   return visible;
 }
 
+// Seen in a real client: .BasicHome is on #GamepadUI_Full_Root itself, so hiding it hid the
+// XMB too (black screen). Only the XMB's neighbours in #Main are Steam's home.
 const HIDE_STEAM_HOME = `
-  .BasicHome { opacity: 0 !important; }
-  .BasicHome * { animation-play-state: paused !important; }
+  #Main > :not([data-ps3-standalone]) { opacity: 0 !important; }
+  #Main > :not([data-ps3-standalone]) * { animation-play-state: paused !important; }
+  #MainNavMenu-Rest > #Footer { opacity: 0 !important; }
 `;
 
 function App({ platform, Xmb }: { platform: Platform; Xmb: typeof import('../Xmb').Xmb }) {

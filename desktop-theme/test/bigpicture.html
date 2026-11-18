@@ -35,11 +35,17 @@
 </script>
 </head>
 <body class="GamepadUIPopupWindowBody">
-<div id="GamepadUI_Full_Root">
+<!-- Same shape as the real client (read from Steam 2026-11): .BasicHome sits on the root
+     itself, the home is #Main's first child, dialogs live in .FullModalOverlay. -->
+<div id="MainNavMenu-Rest">
+<div id="GamepadUI_Full_Root" class="BasicHome OpaqueBackground">
   <div id="gd-bpm-bg" class="show"></div>
+  <div class="FullModalOverlay"><button id="dialog-button">Dialogue Steam</button></div>
   <div id="header">header Steam</div>
-  <div id="Main"><div class="BasicHome"><div class="RecentGamesInnerContainer" style="position:relative;z-index:50;transform:scale(.85);margin-top:420px;height:200px;background:#c33"><button id="carousel">Carrousel Steam (focus)</button></div></div></div>
+  <div id="Main"><div class="AppDetailsMain"><div class="RecentGamesInnerContainer" style="position:relative;z-index:50;transform:scale(.85);margin-top:420px;height:200px;background:#c33"><button id="carousel">Carrousel Steam (focus)</button></div></div></div>
   <div id="side-menu"><button id="menu-item">Menu STEAM</button></div>
+</div>
+<div id="Footer">Barre de touches Steam</div>
 </div>
 <script>
   // ?late=ms: Steam builds Big Picture long after the scripts ran. ?inject: no condition copy
@@ -48,8 +54,9 @@
   if (q.has('late')) {
     const rootEl = document.getElementById('GamepadUI_Full_Root');
     rootEl.remove();
+    const holder = document.getElementById('MainNavMenu-Rest');
     document.body.className = '';
-    setTimeout(() => { document.body.className = 'GamepadUIPopupWindowBody'; document.body.prepend(rootEl); }, Number(q.get('late')));
+    setTimeout(() => { document.body.className = 'GamepadUIPopupWindowBody'; holder.prepend(rootEl); }, Number(q.get('late')));
   }
 </script>
 <script src="../PS3-XMB/ps3/ps3.js"></script>

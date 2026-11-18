@@ -32,7 +32,10 @@ const category = () => page.evaluate(() => document.querySelector('.xmb-root').d
 const cover = await page.evaluate(() => {
   const box = document.getElementById('carousel').getBoundingClientRect();
   const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
-  return { xmbOnTop: !!top?.closest('[data-ps3-standalone]'), homeOpacity: getComputedStyle(document.querySelector('.BasicHome')).opacity };
+  const xmb = document.querySelector('[data-ps3-standalone] .xmb-root');
+  return { xmbOnTop: !!top?.closest('[data-ps3-standalone]'), homeOpacity: getComputedStyle(document.querySelector('#Main > .AppDetailsMain')).opacity,
+    xmbVisible: getComputedStyle(document.getElementById('GamepadUI_Full_Root')).opacity === '1' && getComputedStyle(xmb).opacity === '1',
+    footerOpacity: getComputedStyle(document.getElementById('Footer')).opacity };
 });
 const layers = await page.evaluate(() => [...document.getElementById('GamepadUI_Full_Root').children].map(e => e.id).join(','));
 const start = await category();
@@ -40,6 +43,7 @@ const blockedHome = await press(12);           // right on the hidden carousel �
 const afterRight = await category();
 await press(11);                               // back to Game
 const passedMenu = !(await press(12, '#menu-item'));   // a Steam menu keeps its input
+const passedDialog = !(await press(1, '#dialog-button'));   // and so does a Steam dialog
 const stillGame = await category();
 await press(1); await page.waitForTimeout(300); // open «Jeux Steam»
 await page.screenshot({ path: `${out}/bpm-xmb.png` });
@@ -50,11 +54,14 @@ await page.waitForTimeout(700);
 const gone = await page.evaluate(() => !document.querySelector('.xmb-root'));
 await page.screenshot({ path: `${out}/bpm-other-screen.png` });
 
-const result = { cover, layers, start, blockedHome, afterRight, passedMenu, stillGame, log, gone, errors };
+const result = { passedDialog, cover, layers, start, blockedHome, afterRight, passedMenu, stillGame, log, gone, errors };
 console.log(JSON.stringify(result));
 assert.deepEqual(errors, []);
 assert.ok(cover.xmbOnTop, "the XMB covers Steam's carousel");
 assert.equal(cover.homeOpacity, '0', "Steam's home is not drawn under the XMB");
+assert.ok(cover.xmbVisible, 'the XMB itself stays visible (the root carries .BasicHome in the real client)');
+assert.equal(cover.footerOpacity, '0', "Steam's key bar is hidden under the XMB's own");
+assert.ok(passedDialog, 'a Steam dialog over the home keeps its input');
 assert.equal(layers.split(',').slice(0, 4).join(','), 'ps3-ground,gd-bpm-bg,ps3-wave,ps3-night');
 assert.equal(start, 'game');
 assert.ok(blockedHome, 'controller input aimed at the home is taken by the XMB');
