@@ -14,6 +14,12 @@ export function nightLevel(date = new Date()) {
   return 1;
 }
 
+/** The dark tone of each PS3 colour (the top of its sky), for panels tinted with the theme. */
+export const PS3_DARK: Record<Exclude<Palette, 'original'>, string> = {
+  silver: '#3b3f45', gold: '#4a3a06', lime: '#2a4708', pink: '#5c1840', green: '#08391a', purple: '#311144', teal: '#06393f',
+  sky: '#0f3d66', blue: '#05173f', violet: '#1d0d42', brown: '#2d1806', red: '#3f0306', black: '#000000',
+};
+
 /** PS3 colour lifted to read on smoked glass — used as the accent when no game lends one. */
 export const PS3_ACCENTS: Record<Exclude<Palette, 'original'>, [string, string]> = {
   silver: ['#b9c3cc', '#dfe6ec'], gold: ['#e0b93a', '#f2d46b'], lime: ['#94cf3a', '#c4e86a'], pink: ['#e46fae', '#f29ac7'],

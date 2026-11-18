@@ -25,10 +25,19 @@ export const XMB_CSS = XMB_FONT_CSS + String.raw`
 .xmb-wave-canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
 /* With game backgrounds off, the selected game's colour lies softly in the sky (opacity only:
    the gradient itself never changes while the cursor moves). */
-.xmb-tint { position:absolute; inset:0; opacity:0; transition:opacity 1.2s ease;
-  background:radial-gradient(70% 55% at 62% 58%,color-mix(in srgb,var(--xmb-tint) 55%,transparent),transparent 72%),
-    linear-gradient(180deg,transparent 30%,color-mix(in srgb,var(--xmb-tint) 18%,transparent)); }
-.xmb-tint.on { opacity:.42; }
+.xmb-tint { position:absolute; inset:0; overflow:hidden; opacity:0; transition:opacity 1.4s ease; }
+.xmb-tint.on { opacity:.5; }
+.xmb-blob { position:absolute; aspect-ratio:1; border-radius:50%; transform:translate(-50%,-50%); will-change:transform;
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--blob) var(--blob-strength,60%),transparent),transparent);
+  transition:width 1.4s ease,left 1.4s ease,top 1.4s ease; }
+.xmb-blob-0 { animation:xmb-drift-0 34s ease-in-out infinite alternate; }
+.xmb-blob-1 { animation:xmb-drift-1 41s ease-in-out infinite alternate; }
+.xmb-blob-2 { animation:xmb-drift-2 29s ease-in-out infinite alternate; }
+.xmb-blob-3 { animation:xmb-drift-3 47s ease-in-out infinite alternate; }
+@keyframes xmb-drift-0 { from { transform:translate(-50%,-50%) scale(1); } to { transform:translate(-62%,-44%) scale(1.12); } }
+@keyframes xmb-drift-1 { from { transform:translate(-50%,-50%) scale(1.08); } to { transform:translate(-36%,-60%) scale(.94); } }
+@keyframes xmb-drift-2 { from { transform:translate(-50%,-50%) scale(.95); } to { transform:translate(-58%,-36%) scale(1.1); } }
+@keyframes xmb-drift-3 { from { transform:translate(-50%,-50%) scale(1.05); } to { transform:translate(-40%,-58%) scale(.92); } }
 .xmb-night { position:absolute; inset:0; background:#000814; opacity:calc(var(--xmb-night,0) * .42); transition:opacity 4s ease; pointer-events:none; }
 .ps3-silver { --ps3-dark:#3b3f45; --ps3-mid:#8a9096; --ps3-light:#d9dde0; }
 .ps3-gold   { --ps3-dark:#4a3a06; --ps3-mid:#a68b1d; --ps3-light:#f0dc7a; }
@@ -45,10 +54,18 @@ export const XMB_CSS = XMB_FONT_CSS + String.raw`
 .ps3-black  { --ps3-dark:#000; --ps3-mid:#111317; --ps3-light:#3a3e45; }
 
 /* Game backdrop (PIC1). */
-.xmb-backdrop { position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; opacity:0; transition:opacity 900ms ease; }
+.xmb-backdrop { position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; opacity:0; transition:opacity 1.1s ease; }
 .xmb-backdrop.visible { opacity:1; }
-.xmb-backdrop-image { display:block; width:100%; height:100%; object-fit:cover; object-position:center; }
-.xmb-backdrop:after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,#000a 0%,#0006 45%,#0002 85%),linear-gradient(0deg,#0008,transparent 45%,#0004); }
+/* The game's picture is framed, not pasted: it melts into the PS3 sky at its edges (more so on
+   the left, where the menu is) and drifts in a slow zoom. Transform only, so the compositor
+   moves it; the wave behind it is paused meanwhile. */
+.xmb-backdrop-image { display:block; width:100%; height:100%; object-fit:cover; object-position:center 35%; transform-origin:64% 42%;
+  -webkit-mask-image:radial-gradient(ellipse 52% 62% at 63% 42%,#000 24%,rgba(0,0,0,.6) 54%,transparent 86%);
+  mask-image:radial-gradient(ellipse 52% 62% at 63% 42%,#000 24%,rgba(0,0,0,.6) 54%,transparent 86%);
+  animation:xmb-backdrop-in 1.4s cubic-bezier(.2,.7,.25,1) both,xmb-kenburns 46s ease-in-out 1.4s infinite alternate; }
+@keyframes xmb-backdrop-in { from { transform:scale(1.12); filter:blur(6px); } to { transform:scale(1.04); filter:blur(0); } }
+@keyframes xmb-kenburns { from { transform:scale(1.04) translate(0,0); } to { transform:scale(1.14) translate(-2.4%,1.6%); } }
+.xmb-backdrop:after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,#0009 0%,#0005 40%,#0001 80%),linear-gradient(0deg,#0007,transparent 42%,#0003); }
 
 .xmb-input { position:absolute; inset:0; z-index:1; outline:none !important; box-shadow:none !important; }
 .xmb-stage { position:absolute; inset:0 auto auto 0; width:calc(100% / var(--xmb-scale)); height:calc(100% / var(--xmb-scale)); container-type:size; transform:scale(var(--xmb-scale)); transform-origin:top left; --xmb-axis:29.4%; --xmb-category-step:10.65%; }
@@ -295,7 +312,7 @@ export const XMB_CSS = XMB_FONT_CSS + String.raw`
    The accent pair (--xmb-accent, --xmb-accent-2) comes from the selected game's art, or the PS3
    colour. Blur is used on the Options panel only: the wave is paused while it is open, so the
    blur is worked out once, not on every frame. */
-.xmb-glass { --xmb-glass-fill:linear-gradient(150deg,rgba(12,13,19,.62),rgba(5,6,9,.56));
+.xmb-glass { --xmb-glass-fill:linear-gradient(150deg,color-mix(in srgb,var(--xmb-theme-dark,#0c0d13) 45%,rgba(12,13,19,.64)),color-mix(in srgb,var(--xmb-theme-dark,#05060a) 30%,rgba(5,6,9,.58)));
   --xmb-grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)' opacity='.09'/%3E%3C/svg%3E");
   --xmb-lit:color-mix(in srgb,var(--xmb-accent,#5e90e4) 45%,rgba(255,255,255,.18));
   --xmb-accent-fill:linear-gradient(135deg,var(--xmb-accent,#5e90e4),var(--xmb-accent-2,var(--xmb-accent,#5e90e4))); }

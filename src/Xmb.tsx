@@ -11,7 +11,7 @@ import { Waves } from './Waves';
 import { Glyph } from './Glyph';
 import { LOCALES } from './i18n';
 import { gameAccent, type AccentPair } from './accent';
-import { PS3_ACCENTS, resolvePalette } from './palette';
+import { PS3_ACCENTS, PS3_DARK, resolvePalette } from './palette';
 import { playSound } from './sound';
 import { XMB_CSS } from './styles';
 import { GameBackdrop } from './GameBackdrop';
@@ -341,10 +341,12 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
     }, 350);
     return () => { cancelled = true; clearTimeout(timer); };
   }, [accentGame]);
-  const ps3Pair = PS3_ACCENTS[resolvePalette(settings.palette)];
+  const themeColour = resolvePalette(settings.palette);
+  const ps3Pair = PS3_ACCENTS[themeColour];
   const accentPair = settings.accent === 'game' && gamePair ? [gamePair.accent, gamePair.second] : ps3Pair;
   // Game backgrounds off: the selected game still lends its colour, softly, to the wave and sky.
   const tint = !settings.gameBackground && selected?.game && gamePair?.id === selected.game.id ? gamePair.accent : undefined;
+  const swatches = tint ? gamePair?.palette : undefined;
 
   const selectCategory = (next: number) => {
     const clamped = clampSelection(next, CATEGORIES.length);
@@ -460,8 +462,9 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
   };
 
   return <div ref={root} className={`xmb-root ${settings.panels === 'glass' ? 'xmb-glass' : 'xmb-classic'} ${settings.motion ? '' : 'xmb-still'}`}
-    style={{ '--xmb-scale': scale, '--xmb-accent': accentPair[0], '--xmb-accent-2': accentPair[1] } as CSSProperties} data-category={category} data-depth={activeFolder || album ? 1 : category === 'settings' ? settingsPath.length : 0}>
-    <style>{XMB_CSS}</style><Waves palette={settings.palette} motion={settings.motion} tint={tint} paused={backdropVisible || !!viewerFile || !!menuItem || !!panel} />
+    style={{ '--xmb-scale': scale, '--xmb-accent': accentPair[0], '--xmb-accent-2': accentPair[1],
+      '--xmb-theme': ps3Pair[0], '--xmb-theme-2': ps3Pair[1], '--xmb-theme-dark': PS3_DARK[themeColour] } as CSSProperties} data-category={category} data-depth={activeFolder || album ? 1 : category === 'settings' ? settingsPath.length : 0}>
+    <style>{XMB_CSS}</style><Waves palette={settings.palette} motion={settings.motion} tint={tint} swatches={swatches} paused={backdropVisible || !!viewerFile || !!menuItem || !!panel} />
     <GameBackdrop game={selected?.game} enabled={settings.gameBackground} resolve={platform.backgrounds} onVisible={setBackdropVisible} />
     <InputSurface onCommand={command} label="PS3 XMB">
       <div className="xmb-stage" aria-hidden={viewerFile ? true : undefined} inert={viewerFile ? true : undefined}>

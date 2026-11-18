@@ -184,15 +184,17 @@ const HIDE_STEAM_HOME = `
 function useSideMenus(container: HTMLElement) {
   useEffect(() => {
     let lastInset = '';
-    let lastAccent = '';
+    let last = { accent: '#5e90e4', accent2: '#6fa0f0', dark: '#05173f' };
     const tick = () => {
       // The XMB sets its accent inline on its root: read that, not the computed style (which
       // would make the browser recompute styles on every tick).
+      // Steam's side windows follow the theme colour chosen in the XMB (not the game's accent):
+      // with a black theme, black glass and grey highlights.
       const xmb = container.querySelector<HTMLElement>('.xmb-root');
-      const accent = xmb?.style.getPropertyValue('--xmb-accent').trim() || lastAccent || '#5e90e4';
-      const accent2 = xmb?.style.getPropertyValue('--xmb-accent-2').trim() || accent;
-      lastAccent = accent;
-      dressSideWindows(accent, accent2);
+      const read = (name: string) => xmb?.style.getPropertyValue(name).trim();
+      const theme = { accent: read('--xmb-theme') || last.accent, accent2: read('--xmb-theme-2') || last.accent2, dark: read('--xmb-theme-dark') || last.dark };
+      last = theme;
+      dressSideWindows(theme.accent, theme.accent2, theme.dark);
       const quick = openSideMenu() === 2;
       if (quick) {
         const inset = `${quickAccessInset() + 16}px`;

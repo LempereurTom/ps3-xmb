@@ -44,3 +44,13 @@ test('the wave tint is a light hint of the game colour', async () => {
   assert.equal(mixWithWhite('#000000', 0), 'rgb(255,255,255)');
   assert.equal(mixWithWhite('not a colour', 0.5), 'rgb(255,255,255)');
 });
+test('the palette keeps the art’s colours in their proportions', async () => {
+  const { pickAccent } = await import('../src/accent');
+  // 3/4 blue, 1/4 orange
+  const data = new Uint8ClampedArray(400 * 4);
+  for (let i = 0; i < 400; i++) data.set(i < 300 ? [30, 90, 220, 255] : [230, 120, 30, 255], i * 4);
+  const palette = pickAccent(data)!.palette!;
+  assert.equal(palette.length, 2);
+  assert.ok(Math.abs(palette.reduce((s, p) => s + p.share, 0) - 1) < 1e-9);
+  assert.ok(palette[0].share > 0.65 && palette[0].share < 0.85, String(palette[0].share));
+});

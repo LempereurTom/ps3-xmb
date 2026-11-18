@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { Palette } from './model';
 import { nightLevel, resolvePalette } from './palette';
+import type { Swatch } from './accent';
 
 /**
  * PS3-style background: a colour gradient that follows the month ("Original" theme) and the
@@ -159,7 +160,12 @@ function useClockTick(ms: number) {
   return now;
 }
 
-export const Waves = memo(function Waves({ palette, motion, paused = false, tint }: { palette: Palette; motion: boolean; paused?: boolean; tint?: string }) {
+/** Where each colour of the game's art drifts in the sky: biggest share first, nearest the wave. */
+const BLOB_HOMES = [[62, 56], [26, 38], [82, 26], [42, 80]] as const;
+
+export const Waves = memo(function Waves({ palette, motion, paused = false, tint, swatches }: {
+  palette: Palette; motion: boolean; paused?: boolean; tint?: string; swatches?: Swatch[];
+}) {
   const background = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const pausedRef = useRef(paused);
@@ -228,7 +234,16 @@ export const Waves = memo(function Waves({ palette, motion, paused = false, tint
 
   return <div ref={background} className={`xmb-background ps3-${colour}`} aria-hidden="true" style={{ '--xmb-night': night.toFixed(2), '--xmb-tint': tint ?? 'transparent' } as CSSProperties}>
     <div className="xmb-light" />
-    <div className={`xmb-tint${tint ? ' on' : ''}`} />
+    {/* The game's colours, each as large as its share of the art, drifting slowly (transform
+        only: the compositor moves them, nothing repaints). */}
+    <div className={`xmb-tint${tint ? ' on' : ''}`}>
+      {(swatches?.length ? swatches : tint ? [{ color: tint, share: 1 }] : []).slice(0, 4).map((swatch, i) => {
+        const [x, y] = BLOB_HOMES[i];
+        const size = Math.round(34 + 70 * Math.sqrt(swatch.share));
+        return <span key={i} className={`xmb-blob xmb-blob-${i}`}
+          style={{ left: `${x}%`, top: `${y}%`, width: `${size}%`, '--blob': swatch.color, '--blob-strength': `${Math.round(45 + 30 * swatch.share)}%` } as CSSProperties} />;
+      })}
+    </div>
     <canvas ref={canvas} className="xmb-wave-canvas" />
     <div className="xmb-night" />
   </div>;
