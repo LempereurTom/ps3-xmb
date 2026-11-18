@@ -62,7 +62,7 @@ await press(2); for (let i = 0; i < 3; i++) await press(12);                 // 
 for (let i = 0; i < 3; i++) await press(12); await page.waitForTimeout(300);  // Game → Friends
 await press(1); await page.waitForTimeout(300);                               // Friends & Chat
 for (let i = 0; i < 3; i++) await press(11);                                // back to Game
-await press(10); await press(10);                                            // Game → «Bibliothèque de jeux» (no user collection here)
+for (let i = 0; i < 4; i++) await press(10);                                // recent, installed, all games, downloads → Steam library
 await press(1); await page.waitForTimeout(700);                               // Steam leaves the home
 await page.waitForTimeout(700);
 const gone = await page.evaluate(() => !document.querySelector('.xmb-root'));

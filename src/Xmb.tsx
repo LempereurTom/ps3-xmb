@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from 'react';
-import { CATEGORIES, HOME_CATEGORY, clampSelection, visibleGames, words, type PanelData, type PersonaState, type Command, type Game, type GameFolder, type Item, type Platform, type Settings, type Status } from './model';
+import { CATEGORIES, HOME_CATEGORY, clampSelection, visibleGames, words, type PanelData, type PersonaState, type Command, type IconName, type Game, type GameFolder, type Item, type Platform, type Settings, type Status } from './model';
 import { MediaParents, MediaViewer, useMediaLibrary, type ViewerHandle } from './Media';
 import { ItemMenu, itemOptions } from './ItemMenu';
 import { InfoPanel } from './InfoPanel';
@@ -161,11 +161,25 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
   const library = useMemo<Item>(() => ({ id: 'library', title: t.library, subtitle: t.openLibrary, icon: 'memory', action: nav('library') }), [t, nav]);
   const musicItems = useMemo(() => games.filter(g => /spotify|music|foobar|vlc|clementine|audacious|rhythmbox/i.test(g.name)).map(gameItem), [games, gameItem]);
   const listedGames = useMemo(() => visibleGames(games, settings.installedOnly), [games, settings.installedOnly]);
-  const folderLists = useMemo(() => [
-    { id: 'builtin:steam', name: t.steamGames, games: listedGames.filter(game => !game.shortcut) },
-    { id: 'builtin:shortcuts', name: t.shortcuts, games: listedGames.filter(game => game.shortcut) },
-    ...folders.map(folder => { const ids = new Set(folder.gameIds); return { id: `collection:${folder.id}`, name: folder.name, games: listedGames.filter(game => ids.has(game.id)) }; }),
-  ], [listedGames, folders, t]);
+  // The Game column, in the order games are reached for: what was just played, what is ready
+  // to play, the player's own picks, then everything. Empty folders are left out.
+  const folderLists = useMemo(() => {
+    const ready = visibleGames(games, false).filter(game => game.installed || game.shortcut);
+    const collection = (folder: GameFolder) => { const ids = new Set(folder.gameIds); return listedGames.filter(game => ids.has(game.id)); };
+    const favourites = folders.find(folder => folder.id === 'favorite');
+    // Steam's "installed locally" collection is the same as our installed folder.
+    const own = folders.filter(folder => folder.id !== 'favorite' && folder.id !== 'local-install');
+    const byName = (a: Game, b: Game) => a.name.localeCompare(b.name, LOCALES[settings.language]);
+    const lists: Array<{ id: string; name: string; icon: IconName; games: Game[]; always?: boolean }> = [
+      { id: 'builtin:recent', name: t.recentGames, icon: 'clock', games: listedGames.filter(game => game.lastPlayed > 0).slice(0, 20) },
+      { id: 'builtin:installed', name: t.installedGames, icon: 'play', games: ready },
+      ...(favourites ? [{ id: 'collection:favorite', name: favourites.name, icon: 'folder' as const, games: collection(favourites) }] : []),
+      ...own.map(folder => ({ id: `collection:${folder.id}`, name: folder.name, icon: 'folder' as const, games: collection(folder) })),
+      { id: 'builtin:all', name: t.allGames, icon: 'game', games: listedGames.filter(game => !game.shortcut).sort(byName), always: true },
+      { id: 'builtin:shortcuts', name: t.shortcuts, icon: 'folder', games: listedGames.filter(game => game.shortcut) },
+    ];
+    return lists.filter(list => list.always || list.games.length > 0);
+  }, [games, listedGames, folders, t, settings.language]);
   const activeFolder = settings.groupByFolders && category === 'game' ? folderLists.find(folder => folder.id === folderId) : undefined;
   const albums = useMemo(() => {
     const names = new Map(games.map(game => [String(game.id), game.name]));
@@ -204,10 +218,12 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
   const gameRoot = useMemo<Item[]>(() => {
     const rows = settings.groupByFolders
       ? folderLists.map((folder): Item => ({ id: folder.id, title: folder.name, subtitle: `${t.gameCount}: ${folder.games.length}`,
-          icon: 'folder', opensLevel: true, action: () => setFolderId(folder.id) }))
+          icon: folder.icon, opensLevel: true, action: () => setFolderId(folder.id) }))
       : listedGames.map(gameItem);
-    return [...rows, rows.length ? library : { ...library, subtitle: t.noGamesHelp },
-      { id: 'downloads', title: t.downloads, icon: 'download', action: nav('downloads'), panel: () => downloadsPanelRef.current?.() }];
+    // Then Steam's own screens: what is downloading, and the full library.
+    return [...rows,
+      { id: 'downloads', title: t.downloads, icon: 'download', action: nav('downloads'), panel: () => downloadsPanelRef.current?.() },
+      rows.length ? library : { ...library, subtitle: t.noGamesHelp }];
   }, [settings.groupByFolders, folderLists, t, listedGames, gameItem, library, nav]);
   const folderContents = useMemo<Item[]>(() => activeFolder?.games.length ? activeFolder.games.map(gameItem)
     : [{ id: 'empty-folder', title: t.emptyFolder, subtitle: t.folderHelp, icon: 'folder', action: () => setFolderId(null) }], [activeFolder, gameItem, t]);
