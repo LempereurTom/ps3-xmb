@@ -12,6 +12,7 @@
  * phase and cancelled, so the hidden carousel never moves or launches anything. Events aimed at
  * a menu Steam opened over the XMB pass through untouched.
  */
+import { borrowSteamGlobals } from './prelude';
 import { createRoot, type Root } from 'react-dom/client';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { InputSurfaceProps } from '../Xmb';
@@ -22,17 +23,8 @@ type SteamWindow = Window & Record<string, unknown>;
 const win = window as unknown as SteamWindow;
 const TAG = '[PS3 XMB · Millennium]';
 
-/** Copies Steam's shared globals into this window. False when this is not Steam's Big Picture. */
-function borrowSteam(): boolean {
-  let shared: SteamWindow | null = null;
-  try { shared = (window.opener as SteamWindow | null) ?? null; } catch { shared = null; }
-  const source = shared && shared.webpackChunksteamui ? shared : win.webpackChunksteamui ? win : null;
-  if (!source) return false;
-  for (const name of ['webpackChunksteamui', 'SteamClient', 'SteamUIStore', 'collectionStore', 'appStore', 'appDetailsStore', 'App']) {
-    if (win[name] === undefined && source[name] !== undefined) win[name] = source[name];
-  }
-  return !!win.SteamClient && !!win.collectionStore;
-}
+/** Steam's stores and navigation, borrowed from the shared context once they exist. */
+const borrowSteam = borrowSteamGlobals;
 
 // ───────── settings: localStorage of the Big Picture window (persists with Steam) ─────────
 const KEY = 'ps3-xmb-settings';
@@ -157,10 +149,18 @@ function App({ platform, Xmb }: { platform: Platform; Xmb: typeof import('../Xmb
 }
 
 let root: Root | null = null;
-async function start() {
-  if (root || (win as { __ps3XmbStandalone?: boolean }).__ps3XmbStandalone) return;
-  if (!/GamepadUIPopupWindowBody/.test(document.body?.className ?? '') && !/Big Picture/.test(document.title)) return;
-  if (!borrowSteam()) { console.warn(TAG, 'Steam stores not reachable from this window; XMB not started'); return; }
+let starting = false;
+let homeSeenAt = 0;
+/** True once the XMB runs (or cannot ever run here); false means "look again later". */
+async function start(): Promise<boolean> {
+  if (root || starting || (win as { __ps3XmbStandalone?: boolean }).__ps3XmbStandalone) return true;
+  if (!/GamepadUIPopupWindowBody/.test(document.body?.className ?? '') && !/Big Picture/.test(document.title)) return false;
+  if (!document.getElementById('Main') || !document.querySelector('.BasicHome')) return false;   // not built yet
+  // Let Steam finish building Big Picture before adding anything to it.
+  if (!homeSeenAt) { homeSeenAt = Date.now(); return false; }
+  if (Date.now() - homeSeenAt < 1500) return false;
+  if (!borrowSteam()) return false;                             // Steam's stores not ready yet
+  starting = true;
   (win as { __ps3XmbStandalone?: boolean }).__ps3XmbStandalone = true;
   try {
     // Loaded only now: @decky/ui reads Steam's webpack modules as it is evaluated.
@@ -176,13 +176,16 @@ async function start() {
   } catch (error) {
     console.error(TAG, 'could not start; Steam Home is left as it is', error);
   }
+  return true;
 }
 
-// Big Picture builds its body a moment after the script runs; try for ~20 s.
+// Steam can create the Big Picture window long before it is opened and build it only then, so
+// keep looking for as long as the window lives: a class test and a getElementById per second.
 let tries = 0;
 (function wait() {
-  if (root) return;
-  if (document.getElementById('Main') || tries >= 50) { void start(); return; }
-  tries++;
-  setTimeout(wait, 400);
+  void start().then(done => {
+    if (done) return;
+    tries++;
+    setTimeout(wait, tries < 50 ? 400 : 1000);
+  });
 })();

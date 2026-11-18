@@ -13,10 +13,11 @@ page.on('pageerror', e => errors.push(e.message));
 page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(m.text()); });
 // Vite's dev server rewrites scripts it serves; give the page the built file exactly as Millennium will.
 const bundle = await readFile(new URL('../desktop-theme/PS3-XMB/ps3/xmb.js', import.meta.url), 'utf8');
-await page.route('**/ps3/xmb.js', route => route.fulfill({ status: 200, contentType: 'text/javascript', body: bundle }));
+await page.route(/\/ps3\/xmb\.js/, route => route.fulfill({ status: 200, contentType: 'text/javascript', body: bundle }));
 await page.addInitScript(() => localStorage.setItem('ps3-xmb-settings', JSON.stringify({ sounds: false, palette: 'blue' })));
-await page.goto('http://127.0.0.1:5173/desktop-theme/test/bigpicture.html');
-await page.waitForSelector('[data-ps3-standalone] .xmb-root', { timeout: 8000 });
+const query = process.argv[3] ?? '';
+await page.goto('http://127.0.0.1:5173/desktop-theme/test/bigpicture.html' + query);
+await page.waitForSelector('[data-ps3-standalone] .xmb-root', { timeout: 30000 });
 await page.waitForTimeout(600);
 
 const press = (button, target = '#carousel') => page.evaluate(([b, t]) => {

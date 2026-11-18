@@ -16,17 +16,21 @@
   window.__steamLog = [];
   const log = entry => window.__steamLog.push(entry);
   const router = { Navigate: p => log('router ' + p), NavigationManager: {}, WindowStore: {} };
-  window.webpackChunksteamui = { push([, , cb]) { const r = id => ({ router: { Router: router } })[id]; r.m = { router: true }; cb(r); } };
-  window.SteamUIStore = { GetFocusedWindowInstance: () => ({
+  // As in the real client: Steam's stores live in the shared context, reached as window.opener;
+  // the Big Picture window itself has none of them.
+  const shared = {};
+  shared.webpackChunksteamui = { push([, , cb]) { const r = id => ({ router: { Router: router } })[id]; r.m = { router: true }; cb(r); } };
+  shared.SteamUIStore = { GetFocusedWindowInstance: () => ({
     Navigate: p => log('nav ' + p), NavigateBack: () => {}, NavigateToSteamWeb: u => log('web ' + u),
     Navigator: { Chat: () => log('chat'), ExternalWeb: u => log('ext ' + u) },
     MenuStore: { CloseSideMenus: () => {}, OpenSideMenu: () => {}, OpenQuickAccessMenu: () => {}, OpenMainMenu: () => {} },
   }) };
   const apps = [[620, 'Portal 2'], [367520, 'Hollow Knight'], [413150, 'Stardew Valley']].map(([appid, name], i) => ({
     appid, display_name: name, app_type: 1, installed: true, rt_last_time_played: 1731600000 - i * 86400, gameid: String(appid) }));
-  window.collectionStore = { GetCollection: id => ({ visibleApps: id === 'type-games' ? apps : [] }), userCollections: [] };
-  window.appStore = { GetCustomLandcapeImageURLs: () => [], GetAppOverviewByAppID: id => apps.find(a => a.appid === id), GetCustomHeroImageURLs: () => [] };
-  window.SteamClient = { Apps: { RunGame: id => log('run ' + id) }, Screenshots: { GetAllLocalScreenshots: async () => [] }, URL: {}, UI: { ExitBigPictureMode: () => log('exit-bp') } };
+  shared.collectionStore = { GetCollection: id => ({ visibleApps: id === 'type-games' ? apps : [] }), userCollections: [] };
+  shared.appStore = { GetCustomLandcapeImageURLs: () => [], GetAppOverviewByAppID: id => apps.find(a => a.appid === id), GetCustomHeroImageURLs: () => [] };
+  shared.SteamClient = { Apps: { RunGame: id => log('run ' + id) }, Screenshots: { GetAllLocalScreenshots: async () => [] }, URL: {}, UI: { ExitBigPictureMode: () => log('exit-bp') } };
+  Object.defineProperty(window, 'opener', { value: shared, configurable: true });
   window.addEventListener('error', e => { document.title = 'ERREUR ' + e.message; });
 </script>
 </head>
@@ -37,6 +41,17 @@
   <div id="Main"><div class="BasicHome"><button id="carousel">Carrousel Steam (focus)</button></div></div>
   <div id="side-menu"><button id="menu-item">Menu STEAM</button></div>
 </div>
+<script>
+  // ?late=ms: Steam builds Big Picture long after the scripts ran. ?inject: no condition copy
+  // of xmb.js, so ps3.js has to load it itself.
+  const q = new URLSearchParams(location.search);
+  if (q.has('late')) {
+    const rootEl = document.getElementById('GamepadUI_Full_Root');
+    rootEl.remove();
+    document.body.className = '';
+    setTimeout(() => { document.body.className = 'GamepadUIPopupWindowBody'; document.body.prepend(rootEl); }, Number(q.get('late')));
+  }
+</script>
 <script src="../PS3-XMB/ps3/ps3.js"></script>
-<script src="../PS3-XMB/ps3/xmb.js"></script>
+<script>if (!q.has('inject')) { const x = document.createElement('script'); x.src = '../PS3-XMB/ps3/xmb.js'; document.body.appendChild(x); }</script>
 </body></html>

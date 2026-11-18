@@ -60,7 +60,7 @@ PS3_COLOURS = [("silver", "Argent (janvier)"), ("gold", "Or (février)"), ("lime
 css = lambda src, affects=(".*",): {"TargetCss": {"affects": list(affects), "src": src}}
 conditions["XMB en Big Picture"] = {"default": "Activé", "tab": "PS3",
     "description": "Le vrai menu XMB de la PS3 remplace l'accueil de Big Picture (catégories, jeux, collections, captures, options △). Inutile d'installer Decky. Si le plugin Decky PS3 XMB est aussi installé, c'est lui qui s'affiche.",
-    "values": {"Activé": {"TargetJs": {"affects": ["GamepadUIPopupWindowBody"], "src": "ps3/xmb.js"}}, "Désactivé": {}}}
+    "values": {"Activé": {"TargetJs": {"affects": ["GamepadUIPopupWindowBody"], "src": "ps3/xmb.js"}}, "Désactivé": css("ps3/xmb-off.css")}}
 conditions["Fond PS3"] = {"default": "Couleur du mois et vague XMB", "tab": "PS3",
     "description": "Le fond de la PS3 sous le verre de Glass Dusk, sur le bureau et dans tout Big Picture : la couleur change chaque mois et s'assombrit le soir, avec la vague XMB.",
     "values": {"Couleur du mois et vague XMB": css("ps3/ps3-bpm.css", ["GamepadUIPopupWindowBody"]), "Glass Dusk seul": css("ps3/off.css")}}
@@ -100,7 +100,7 @@ skin.update({
     "name": "PS3 XMB · Glass Dusk",
     "description": "Le verre fumé et les couleurs dynamiques de Glass Dusk sur le fond de la PlayStation 3 : couleur du mois, vague XMB, accent tiré de l'art du jeu. Bibliothèque, magasin, menus, overlay et Big Picture. Compagnon du plugin Decky « PS3 XMB ».",
     "author": "Yareli (Glass Dusk) · adaptation PS3",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "tags": ["PS3", "XMB", "Glass", "Dynamic", "Big Picture"],
 })
 skin.pop("github", None)  # the update check would point at Glass Dusk's repository
