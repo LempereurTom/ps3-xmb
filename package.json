@@ -1,6 +1,6 @@
 {
   "name": "ps3-xmb",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "private": true,
   "type": "module",
   "description": "A PS3-style XMB home screen for Steam Deck and Steam Big Picture (PC), based on PSP XMB by Tim",

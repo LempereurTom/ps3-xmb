@@ -91,6 +91,14 @@ export const XMB_CSS = XMB_FONT_CSS + String.raw`
   background:radial-gradient(closest-side,color-mix(in srgb,var(--xmb-accent,#fff) 35%,#ffffffa0),transparent); }
 .xmb-item.selected .xmb-item-art::after { animation:xmb-halo 2.4s ease-in-out infinite; }
 .xmb-item.has-art .xmb-item-art::after,.xmb-settings-branch .xmb-item-art::after,.xmb-palette-picker .xmb-item-art::after { display:none; }
+/* On the home level the rows are clipped where they pass behind the category band, and the
+   halo of the selected row was cut there in a hard line. The highlight sits still on the PS3
+   (the rows move under it), so here it is one fixed halo, outside the clipped rows. */
+.xmb-home .xmb-item-art::after { display:none; }
+.xmb-home:not(.xmb-game-gallery):not(.xmb-media-gallery)::before { content:''; position:absolute; left:var(--xmb-axis); top:50%; width:17cqw; height:17cqw;
+  transform:translate(-50%,-50%); border-radius:50%; pointer-events:none; opacity:.3;
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--xmb-accent,#fff) 35%,#ffffffa0),transparent);
+  animation:xmb-halo 2.4s ease-in-out infinite; }
 .xmb-item.has-art .xmb-item-art { height:26px; overflow:hidden; background:#0006; box-shadow:0 1px 3px #0008; }
 .xmb-item.has-art.selected .xmb-item-art { transform:scale(2.1); outline:1px solid #ffffffc0; }
 .xmb-item-art img { width:100%; height:100%; object-fit:cover; }

@@ -5,7 +5,7 @@ L'interface de la PlayStation 3 pour Steam, mariée au verre fumé et aux couleu
 
 Le **même XMB** existe en deux versions, selon l'outil que vous utilisez :
 
-| | Version Decky (`ps3-xmb-0.2.3.zip`) | Version Millennium (`ps3-xmb-glass-dusk-millennium-0.2.3.zip`) |
+| | Version Decky (`ps3-xmb-0.2.4.zip`) | Version Millennium (`ps3-xmb-glass-dusk-millennium-0.2.4.zip`) |
 |---|---|---|
 | Pour | **Steam Deck** (mode Jeu), Big Picture sur PC via Decky | **PC** (Windows / Linux) : Steam bureau **et** Big Picture |
 | Menu XMB PS3 à l'accueil | ✅ | ✅ (Big Picture) |
@@ -21,8 +21,8 @@ Le **même XMB** existe en deux versions, selon l'outil que vous utilisez :
 Basé sur [PSP XMB](https://github.com/timskap/psp-xmb) de Tim et [Glass Dusk](https://github.com/Yareli0i/glass-dusk) de Yareli (licences MIT).
 
 **Téléchargements : [dernière release](https://github.com/LempereurTom/ps3-xmb/releases/latest)**
-- `ps3-xmb-0.2.3.zip` → plugin Decky (XMB, Steam Deck + Big Picture PC)
-- `ps3-xmb-glass-dusk-millennium-0.2.3.zip` → thème Millennium (Steam bureau)
+- `ps3-xmb-0.2.4.zip` → plugin Decky (XMB, Steam Deck + Big Picture PC)
+- `ps3-xmb-glass-dusk-millennium-0.2.4.zip` → thème Millennium (Steam bureau)
 
 **➜ [Guide d'installation pas à pas](#installation-pas-à-pas)** (Steam Deck, PC Big Picture, Steam bureau)
 
@@ -84,11 +84,11 @@ Le plus simple est d'installer directement depuis l'adresse :
 1. Paramètres de Decky → onglet **Développeur** → **Installer un plugin depuis une URL**.
 2. Saisissez :
    ```
-   https://github.com/LempereurTom/ps3-xmb/releases/download/v0.2.3/ps3-xmb-0.2.3.zip
+   https://github.com/LempereurTom/ps3-xmb/releases/download/v0.2.4/ps3-xmb-0.2.4.zip
    ```
 3. Validez, puis confirmez l'installation.
 
-Si vous préférez passer par le fichier : en mode bureau, téléchargez `ps3-xmb-0.2.3.zip` depuis la [release](https://github.com/LempereurTom/ps3-xmb/releases/latest). Ensuite, onglet **Développeur** → **Installer un plugin depuis un fichier ZIP** et choisissez-le dans *Téléchargements*.
+Si vous préférez passer par le fichier : en mode bureau, téléchargez `ps3-xmb-0.2.4.zip` depuis la [release](https://github.com/LempereurTom/ps3-xmb/releases/latest). Ensuite, onglet **Développeur** → **Installer un plugin depuis un fichier ZIP** et choisissez-le dans *Téléchargements*.
 
 **d. Activer l'accueil PS3**
 
@@ -136,7 +136,7 @@ Ces deux catégories lisent vos captures et enregistrements Steam ainsi que vos 
 
 **b. Ajouter le thème**
 
-1. Téléchargez **`ps3-xmb-glass-dusk-millennium-0.2.3.zip`** depuis la [release](https://github.com/LempereurTom/ps3-xmb/releases/latest).
+1. Téléchargez **`ps3-xmb-glass-dusk-millennium-0.2.4.zip`** depuis la [release](https://github.com/LempereurTom/ps3-xmb/releases/latest).
 2. Décompressez-le : vous obtenez un dossier **`PS3-XMB`**.
 3. Placez ce dossier dans le dossier des thèmes de Millennium :
    - **Windows** : `C:\Program Files (x86)\Steam\millennium\themes\`
