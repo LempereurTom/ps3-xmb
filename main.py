@@ -8,7 +8,7 @@ import sys
 import tempfile
 import time
 
-DEFAULTS = {"enabled": False, "palette": "original", "language": "fr", "glyphs": "playstation", "panels": "glass", "accent": "game", "sounds": True, "motion": True, "installedOnly": False, "gameBackground": True, "groupByFolders": True}
+DEFAULTS = {"enabled": False, "palette": "original", "language": "fr", "glyphs": "playstation", "panels": "glass", "accent": "game", "sounds": True, "motion": True, "installedOnly": False, "gameBackground": True, "groupByFolders": True, "recentCount": 5}
 PALETTES = ("original", "silver", "gold", "lime", "pink", "green", "purple", "teal", "sky", "blue", "violet", "brown", "red", "black")
 LANGUAGES = ("fr", "en", "ru")
 GLYPHS = ("playstation", "xbox")
@@ -65,7 +65,7 @@ def sanitize(value):
     for key in ("enabled", "sounds", "motion", "installedOnly", "gameBackground", "groupByFolders"):
         if type(value.get(key)) is bool:
             result[key] = value[key]
-    for key, choices in (("palette", PALETTES), ("language", LANGUAGES), ("glyphs", GLYPHS), ("panels", PANELS), ("accent", ACCENTS)):
+    for key, choices in (("palette", PALETTES), ("language", LANGUAGES), ("glyphs", GLYPHS), ("panels", PANELS), ("accent", ACCENTS), ("recentCount", (5, 10, 20))):
         if value.get(key) in choices:
             result[key] = value[key]
     return result

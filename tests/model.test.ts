@@ -40,3 +40,8 @@ test('selection stays valid when a library shrinks or becomes empty', () => {
   assert.equal(clampSelection(4, 0), 0);
   assert.equal(clampSelection(-1, 9), 0);
 });
+test('recently played holds 5 games by default, 10 or 20 on request', () => {
+  assert.equal(cleanSettings({}).recentCount, 5);
+  assert.equal(cleanSettings({ recentCount: 20 }).recentCount, 20);
+  assert.equal(cleanSettings({ recentCount: 7 }).recentCount, 5);
+});

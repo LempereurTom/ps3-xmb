@@ -28,8 +28,12 @@ export interface Settings {
   installedOnly: boolean;
   gameBackground: boolean;
   groupByFolders: boolean;
+  /** How many games «Recently played» holds. */
+  recentCount: RecentCount;
 }
-export const DEFAULT_SETTINGS: Settings = { enabled: false, palette: 'original', language: 'fr', glyphs: 'playstation', panels: 'glass', accent: 'game', sounds: true, motion: true, installedOnly: false, gameBackground: true, groupByFolders: true };
+export const RECENT_COUNTS = [5, 10, 20] as const;
+export type RecentCount = typeof RECENT_COUNTS[number];
+export const DEFAULT_SETTINGS: Settings = { enabled: false, palette: 'original', language: 'fr', glyphs: 'playstation', panels: 'glass', accent: 'game', sounds: true, motion: true, installedOnly: false, gameBackground: true, groupByFolders: true, recentCount: 5 };
 
 export interface Game {
   id: number;
@@ -97,6 +101,7 @@ export function cleanSettings(value: unknown): Settings {
     installedOnly: typeof s.installedOnly === 'boolean' ? s.installedOnly : DEFAULT_SETTINGS.installedOnly,
     gameBackground: typeof s.gameBackground === 'boolean' ? s.gameBackground : DEFAULT_SETTINGS.gameBackground,
     groupByFolders: typeof s.groupByFolders === 'boolean' ? s.groupByFolders : DEFAULT_SETTINGS.groupByFolders,
+    recentCount: RECENT_COUNTS.includes(s.recentCount as RecentCount) ? s.recentCount! : DEFAULT_SETTINGS.recentCount,
   };
 }
 

@@ -42,6 +42,7 @@ export function preferenceTree(settings: Settings): SettingNode[] {
     { id: 'games', title: t.gameSettings, icon: 'game', children: [
       choice('groupByFolders', t.libraryView, 'folder', t.viewHelp, [[true, t.folders], [false, t.list]]),
       choice('installedOnly', t.filter, 'game', t.filterHelp, [[true, t.installed], [false, t.all]]),
+      choice('recentCount', t.recentCount, 'clock', t.recentCountHelp, [[5, '5'], [10, '10'], [20, '20']]),
     ] },
   ];
 }

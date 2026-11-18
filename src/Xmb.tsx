@@ -171,7 +171,7 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
     const own = folders.filter(folder => folder.id !== 'favorite' && folder.id !== 'local-install');
     const byName = (a: Game, b: Game) => a.name.localeCompare(b.name, LOCALES[settings.language]);
     const lists: Array<{ id: string; name: string; icon: IconName; games: Game[]; always?: boolean }> = [
-      { id: 'builtin:recent', name: t.recentGames, icon: 'clock', games: listedGames.filter(game => game.lastPlayed > 0).slice(0, 20) },
+      { id: 'builtin:recent', name: t.recentGames, icon: 'clock', games: listedGames.filter(game => game.lastPlayed > 0).slice(0, settings.recentCount) },
       { id: 'builtin:installed', name: t.installedGames, icon: 'play', games: ready },
       ...(favourites ? [{ id: 'collection:favorite', name: favourites.name, icon: 'folder' as const, games: collection(favourites) }] : []),
       ...own.map(folder => ({ id: `collection:${folder.id}`, name: folder.name, icon: 'folder' as const, games: collection(folder) })),
@@ -179,7 +179,7 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
       { id: 'builtin:shortcuts', name: t.shortcuts, icon: 'folder', games: listedGames.filter(game => game.shortcut) },
     ];
     return lists.filter(list => list.always || list.games.length > 0);
-  }, [games, listedGames, folders, t, settings.language]);
+  }, [games, listedGames, folders, t, settings.language, settings.recentCount]);
   const activeFolder = settings.groupByFolders && category === 'game' ? folderLists.find(folder => folder.id === folderId) : undefined;
   const albums = useMemo(() => {
     const names = new Map(games.map(game => [String(game.id), game.name]));
@@ -359,9 +359,12 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
   }, [accentGame]);
   const themeColour = resolvePalette(settings.palette);
   const ps3Pair = PS3_ACCENTS[themeColour];
-  const accentPair = settings.accent === 'game' && gamePair ? [gamePair.accent, gamePair.second] : ps3Pair;
+  // The game's colours only while that game is selected: back on a folder or another category,
+  // the menu returns to the theme's neutral colours (it used to keep the last game's).
+  const onGame = !!selected?.game && gamePair?.id === selected.game.id;
+  const accentPair = settings.accent === 'game' && onGame && gamePair ? [gamePair.accent, gamePair.second] : ps3Pair;
   // Game backgrounds off: the selected game still lends its colour, softly, to the wave and sky.
-  const tint = !settings.gameBackground && selected?.game && gamePair?.id === selected.game.id ? gamePair.accent : undefined;
+  const tint = !settings.gameBackground && onGame ? gamePair?.accent : undefined;
   const swatches = tint ? gamePair?.palette : undefined;
 
   const selectCategory = (next: number) => {

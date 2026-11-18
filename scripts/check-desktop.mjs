@@ -20,20 +20,26 @@ for (const [name, q] of Object.entries(cases)) {
 }
 // performance: count frames drawn by the wave in still mode vs live mode over 2 s
 const draws = {};
-let assert_top;
+let assert_top, drift;
 for (const mode of ['live', 'still']) {
   await page.goto('http://127.0.0.1:5173/desktop-theme/test/harness.html' + (mode === 'still' ? '?css=' + encodeURIComponent(':root{--ps3-wave:still}') : ''));
   await page.evaluate(() => { const c = document.getElementById('ps3-wave'); window.__draws = 0; const ctx = c.getContext('2d'); const o = ctx.clearRect.bind(ctx); ctx.clearRect = (...a) => { window.__draws++; return o(...a); }; });
   await page.waitForTimeout(2000);
   draws[mode] = await page.evaluate(() => window.__draws);
-  if (mode === 'live') assert_top = await page.evaluate(() => document.getElementById('ps3-wave').classList.contains('ps3-top') && getComputedStyle(document.getElementById('ps3-wave')).zIndex);
+  if (mode === 'live') drift = await page.evaluate(() => ({ a: getComputedStyle(document.getElementById('ps3-wave')).animationName,
+    b: getComputedStyle(document.getElementById('ps3-wave-2') || document.body).animationName, wide: document.getElementById('ps3-wave').getBoundingClientRect().width / innerWidth }));
+  if (mode === 'live') assert_top = await page.evaluate(() => { const w = document.getElementById('ps3-wave'); const steam = document.getElementById('popup_target');
+    return { z: getComputedStyle(w).zIndex, steamZ: getComputedStyle(steam).zIndex, blur: getComputedStyle(document.documentElement).getPropertyValue('--gd-blur').trim() }; });
   console.log('draws in 2s', mode, draws[mode]);
 }
 const assert = (await import('node:assert/strict')).default;
 assert.deepEqual(errors, []);
-assert.ok(draws.live >= 45 && draws.live <= 66, `animated wave ~30 fps on the desktop (got ${draws.live})`);
+assert.equal(draws.live, 0, 'the desktop wave is never redrawn while it moves');
+assert.deepEqual([drift.a, drift.b], ['ps3-drift-a', 'ps3-drift-b'], 'two layers drift by CSS');
+assert.ok(Math.abs(drift.wide - 1.4) < 0.05, 'layers wider than the window');
 assert.equal(draws.still, 0, 'still wave draws nothing per frame');
-assert.equal(assert_top, '2', 'animated desktop wave sits above the glass, so nothing under the blur moves');
-console.log('errors', JSON.stringify(errors));
+assert.ok(Number(assert_top.z) < Number(assert_top.steamZ), 'the wave stays behind Steam, never over the game art');
+assert.equal(assert_top.blur, '14px', 'lighter glass blur while the wave moves');
+console.log('errors', JSON.stringify(errors), 'drift', JSON.stringify(drift));
 await browser.close();
 console.log('PASS');
