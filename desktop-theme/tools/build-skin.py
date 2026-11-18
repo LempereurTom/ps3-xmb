@@ -99,11 +99,16 @@ skin = {k: v for k, v in source.items() if k not in ("Conditions", "Patches")}
 skin.update({
     "name": "PS3 XMB · Glass Dusk",
     "description": "Le verre fumé et les couleurs dynamiques de Glass Dusk sur le fond de la PlayStation 3 : couleur du mois, vague XMB, accent tiré de l'art du jeu. Bibliothèque, magasin, menus, overlay et Big Picture. Compagnon du plugin Decky « PS3 XMB ».",
-    "author": "Yareli (Glass Dusk) · adaptation PS3",
+    "author": "LempereurTom (PS3 XMB) · Yareli (Glass Dusk)",
     "version": "0.2.7",
     "tags": ["PS3", "XMB", "Glass", "Dynamic", "Big Picture"],
 })
-skin.pop("github", None)  # the update check would point at Glass Dusk's repository
+# Its own repository (steambrew.app reads the README and updates from it), its own previews;
+# Glass Dusk's funding link is Yareli's, so it is not carried over (she is credited in the README).
+skin["github"] = {"owner": "LempereurTom", "repo_name": "ps3-xmb-theme"}
+skin["header_image"] = "https://raw.githubusercontent.com/LempereurTom/ps3-xmb-theme/main/images/ps3-header.jpg"
+skin["splash_image"] = "https://raw.githubusercontent.com/LempereurTom/ps3-xmb-theme/main/images/ps3-splash.jpg"
+skin.pop("funding", None)
 skin["Conditions"] = conditions
 skin["Patches"] = source["Patches"] + [
     {"MatchRegexString": "^Steam$", "TargetCss": "ps3/ps3.css"},

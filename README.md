@@ -155,7 +155,7 @@ Ces deux catégories lisent vos captures et enregistrements Steam ainsi que vos 
 
 Dans le XMB, *Paramètres → Paramètres système → Accueil Steam standard* le masque jusqu'au prochain démarrage de Big Picture. Pour le désactiver définitivement : onglet PS3 → **XMB en Big Picture : Désactivé**.
 
-Si la bibliothèque reste d'aspect Steam d'origine alors que le magasin est bien thématisé : quittez Steam complètement, relancez-le, puis dans Millennium passez à un autre thème et revenez à celui-ci. Voir aussi la section dépannage du [README de Glass Dusk](desktop-theme/PS3-XMB/README.md).
+Si la bibliothèque reste d'aspect Steam d'origine alors que le magasin est bien thématisé : quittez Steam complètement, relancez-le, puis dans Millennium passez à un autre thème et revenez à celui-ci. Voir aussi la section dépannage du [README de Glass Dusk](desktop-theme/PS3-XMB/README.glass-dusk.md).
 
 ### Mettre à jour
 
@@ -245,7 +245,7 @@ python desktop-theme/tools/build-skin.py   # régénère skin.json (traductions 
 
 - Le XMB de la version Millennium lit la bibliothèque et la navigation de Steam par `window.opener` (comme Glass Dusk), sans toucher aux modules internes de Steam, et prend la manette via les événements `vgp_onbuttondown` de Big Picture. Vérifié dans un vrai client Steam (Windows, novembre 2026) : affichage, navigation à la manette, fond PS3. Si une touche ne réagit pas dans votre configuration, signalez-le dans les [issues](https://github.com/LempereurTom/ps3-xmb/issues).
 - Decky sur Windows est expérimental côté Decky lui-même.
-- Le thème bureau dépend des noms de classes lisibles que Millennium (3.4+) rétablit ; voir le README de Glass Dusk dans `desktop-theme/PS3-XMB/README.md`.
+- Le thème bureau dépend des noms de classes lisibles que Millennium (3.4+) rétablit ; voir le README de Glass Dusk dans `desktop-theme/PS3-XMB/README.glass-dusk.md`.
 - Les sons sont ceux du pack *PSP Sounds* (SGL-Galaxy) fourni par PSP XMB ; aucun son Sony n'est inclus.
 
 ## Crédits
