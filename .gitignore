@@ -9,3 +9,7 @@ __pycache__/
 .deck-host
 test-results/
 *.log
+
+# check script screenshots
+/undefined/
+/*.png
