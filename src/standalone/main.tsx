@@ -31,6 +31,12 @@ const borrowSteam = borrowSteamGlobals;
 
 // ───────── settings: localStorage of the Big Picture window (persists with Steam) ─────────
 const KEY = 'ps3-xmb-settings';
+// The PS3 colour is shared with the theme's layer (ps3/ps3.js) in every Steam window, so the
+// colour picked here stays on the desktop too. Steam's windows share one origin and storage.
+const COLOUR_KEY = 'ps3-colour';
+function sharedColour(): string | undefined {
+  try { return localStorage.getItem(COLOUR_KEY) ?? undefined; } catch { return undefined; }
+}
 const listeners = new Set<() => void>();
 let current: Settings = (() => {
   try {
@@ -43,13 +49,13 @@ let current: Settings = (() => {
       if (version !== '2' && version !== '3') value.installedOnly = false;
       // 0.3.0: the XMB follows Steam's language (it was French for everyone before).
       if (version !== '3') { value.language = 'auto'; localStorage.setItem(KEY + '-v', '3'); }
-      return { ...cleanSettings(value), enabled: true };
+      return { ...cleanSettings({ ...value, palette: sharedColour() ?? value.palette }), enabled: true };
     }
   } catch { /* unreadable: start from the defaults */ }
   // First run: the colour chosen in the theme's PS3 tab (ps3/colours/*.css), so the XMB and the
   // rest of Big Picture match out of the box. The XMB's own Theme Settings can change it later.
   const choice = getComputedStyle(document.documentElement).getPropertyValue('--ps3-choice').trim();
-  return { ...cleanSettings({ palette: choice || 'original' }), enabled: true };
+  return { ...cleanSettings({ palette: sharedColour() ?? (choice || 'original') }), enabled: true };
 })();
 let sessionHidden = false;   // «Accueil Steam standard» hides the XMB until Big Picture restarts
 const subscribe = (fn: () => void) => { listeners.add(fn); return () => { listeners.delete(fn); }; };
@@ -59,8 +65,22 @@ function updateSettings(value: Partial<Settings>) {
   const { enabled: _ignored, ...rest } = value;
   current = { ...cleanSettings({ ...current, ...rest }), enabled: true };
   try { localStorage.setItem(KEY, JSON.stringify(current)); } catch { /* private storage: this session only */ }
+  if (rest.palette && rest.palette !== sharedColour()) {
+    try {
+      localStorage.setItem(COLOUR_KEY, current.palette);
+      // The desktop window hears it from the browser; this window's PS3 layer from us.
+      dispatchEvent(new StorageEvent('storage', { key: COLOUR_KEY, newValue: current.palette }));
+    } catch { /* private storage */ }
+  }
   listeners.forEach(fn => fn());
 }
+// A colour chosen in Millennium's settings (the theme's PS3 tab) comes back the same way.
+addEventListener('storage', event => {
+  if (event.key !== COLOUR_KEY || !event.newValue || event.newValue === current.palette) return;
+  current = { ...cleanSettings({ ...current, palette: event.newValue }), enabled: true };
+  try { localStorage.setItem(KEY, JSON.stringify(current)); } catch { /* private storage */ }
+  listeners.forEach(fn => fn());
+});
 
 // ───────── what Decky's Python backend gives, done from Steam's frontend ─────────
 interface Screenshot { nAppID: number; hHandle: number; nCreated: number; strCaption?: string; strUrl: string }
