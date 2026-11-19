@@ -39,7 +39,10 @@ let current: Settings = (() => {
       const value = JSON.parse(saved);
       // 0.2.2: the whole library is shown by default (only installed games before, which read
       // as "my library does not work"). Settings saved earlier take the new default once.
-      if (localStorage.getItem(KEY + '-v') !== '2') { value.installedOnly = false; localStorage.setItem(KEY + '-v', '2'); }
+      const version = localStorage.getItem(KEY + '-v');
+      if (version !== '2' && version !== '3') value.installedOnly = false;
+      // 0.3.0: the XMB follows Steam's language (it was French for everyone before).
+      if (version !== '3') { value.language = 'auto'; localStorage.setItem(KEY + '-v', '3'); }
       return { ...cleanSettings(value), enabled: true };
     }
   } catch { /* unreadable: start from the defaults */ }

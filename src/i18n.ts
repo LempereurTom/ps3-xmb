@@ -1,4 +1,11 @@
 import type { Language } from './model';
+import { de } from './locales/de';
+import { es } from './locales/es';
+import { it } from './locales/it';
+import { ja } from './locales/ja';
+import { pl } from './locales/pl';
+import { pt } from './locales/pt';
+import { zh } from './locales/zh';
 
 const en = {
   status: 'Status', online: 'Online', away: 'Away', invisible: 'Invisible', offline: 'Offline',
@@ -15,7 +22,7 @@ const en = {
   system: 'System Settings', theme: 'Theme Settings', date: 'Date and Time Settings', sound: 'Sound Settings', display: 'Display Settings',
   internet: 'Network Settings', library: 'Steam Library', downloads: 'Downloads', screenshots: 'Screenshots', recordings: 'Game Recordings',
   musicApps: 'Music Applications', noMusic: 'Add a music player to your Steam library', noGames: 'No installed games', noGamesHelp: 'Open Game Library to install a game',
-  language: 'System Language', animation: 'Wave Animation', filter: 'Show Games', installed: 'Installed', all: 'All games',
+  language: 'System Language', languageAuto: 'Steam language', animation: 'Wave Animation', filter: 'Show Games', installed: 'Installed', all: 'All games',
   on: 'On', off: 'Off',
   original: 'Original (monthly)', silver: 'Silver', gold: 'Gold', lime: 'Lime', pink: 'Pink', green: 'Green', purple: 'Purple',
   teal: 'Teal', sky: 'Sky Blue', blue: 'Blue', violet: 'Violet', brown: 'Brown', red: 'Red', black: 'Black',
@@ -65,7 +72,7 @@ const fr: Words = {
   system: 'Paramètres système', theme: 'Paramètres de thème', date: 'Paramètres de date et d’heure', sound: 'Paramètres audio', display: 'Paramètres d’affichage',
   internet: 'Paramètres réseau', library: 'Bibliothèque Steam', downloads: 'Téléchargements', screenshots: 'Captures d’écran', recordings: 'Enregistrements de jeu',
   musicApps: 'Applications musicales', noMusic: 'Ajoutez un lecteur de musique à votre bibliothèque Steam', noGames: 'Aucun jeu installé', noGamesHelp: 'Ouvrez la bibliothèque pour installer un jeu',
-  language: 'Langue du système', animation: 'Animation de la vague', filter: 'Jeux affichés', installed: 'Installés', all: 'Tous les jeux',
+  language: 'Langue du système', languageAuto: 'Langue de Steam', animation: 'Animation de la vague', filter: 'Jeux affichés', installed: 'Installés', all: 'Tous les jeux',
   on: 'Activé', off: 'Désactivé',
   original: 'Original (mensuel)', silver: 'Argent', gold: 'Or', lime: 'Citron vert', pink: 'Rose', green: 'Vert', purple: 'Pourpre',
   teal: 'Turquoise', sky: 'Bleu ciel', blue: 'Bleu', violet: 'Violet', brown: 'Marron', red: 'Rouge', black: 'Noir',
@@ -114,7 +121,7 @@ const ru: Words = {
   system: 'Настройки системы', theme: 'Настройки темы', date: 'Настройки даты и времени', sound: 'Настройки звука', display: 'Настройки экрана',
   internet: 'Настройки сети', library: 'Библиотека игр', downloads: 'Загрузки', screenshots: 'Снимки экрана', recordings: 'Записи игр',
   musicApps: 'Музыкальные приложения', noMusic: 'Добавьте плеер в библиотеку Steam', noGames: 'Нет установленных игр', noGamesHelp: 'Откройте библиотеку и установите игру',
-  language: 'Язык системы', animation: 'Анимация волны', filter: 'Показывать игры', installed: 'Установленные', all: 'Все игры',
+  language: 'Язык системы', languageAuto: 'Язык Steam', animation: 'Анимация волны', filter: 'Показывать игры', installed: 'Установленные', all: 'Все игры',
   on: 'Вкл.', off: 'Выкл.',
   original: 'Оригинальный (по месяцам)', silver: 'Серебристый', gold: 'Золотой', lime: 'Лаймовый', pink: 'Розовый', green: 'Зелёный', purple: 'Пурпурный',
   teal: 'Бирюзовый', sky: 'Голубой', blue: 'Синий', violet: 'Фиолетовый', brown: 'Коричневый', red: 'Красный', black: 'Чёрный',
@@ -148,6 +155,13 @@ const ru: Words = {
   detailsHelp: 'Открыть страницу этой игры в библиотеке Steam.',
 };
 
-export const words: Record<Language, Words> = { fr, en, ru };
+export const words: Record<Language, Words> = { en, fr, de, es, pt, it, pl, ru, zh, ja };
+/** Each language in its own name, for the Language setting. */
+export const LANGUAGE_NAMES: ReadonlyArray<readonly [Language, string]> = [
+  ['en', 'English'], ['fr', 'Français'], ['de', 'Deutsch'], ['es', 'Español'], ['pt', 'Português (Brasil)'],
+  ['it', 'Italiano'], ['pl', 'Polski'], ['ru', 'Русский'], ['zh', '简体中文'], ['ja', '日本語'],
+];
 /** Locale used for dates: the PS3 shows day/month outside North America. */
-export const LOCALES: Record<Language, string> = { fr: 'fr-FR', en: 'en-GB', ru: 'ru-RU' };
+export const LOCALES: Record<Language, string> = {
+  en: 'en-GB', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', pt: 'pt-BR', it: 'it-IT', pl: 'pl-PL', ru: 'ru-RU', zh: 'zh-CN', ja: 'ja-JP',
+};

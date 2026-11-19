@@ -10,6 +10,7 @@ import { Icon } from './Icons';
 import { Waves } from './Waves';
 import { Glyph } from './Glyph';
 import { LOCALES } from './i18n';
+import { useLanguage } from './language';
 import { gameAccent, type AccentPair } from './accent';
 import { PS3_ACCENTS, PS3_DARK, resolvePalette } from './palette';
 import { playSound } from './sound';
@@ -62,7 +63,8 @@ const rememberedSelection: Record<string, string> = {};
 export function Xmb({ platform, settings, updateSettings, InputSurface = KeyboardSurface }: {
   platform: Platform; settings: Settings; updateSettings: (value: Partial<Settings>) => void; InputSurface?: ComponentType<InputSurfaceProps>;
 }) {
-  const t = words[settings.language];
+  const lang = useLanguage(settings.language);
+  const t = words[lang];
   const [categoryIndex, setCategoryIndex] = useState(rememberedCategory);
   const category = CATEGORIES[categoryIndex];
   const [selections, setSelections] = useState<Record<string, string>>({ ...rememberedSelection });
@@ -151,9 +153,9 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
     }).finally(() => { busy.current = false; });
   }, [t.error]);
   const nav = useCallback((destination: string) => () => run(() => platform.navigate(destination)), [platform, run]);
-  const dateFormat = useMemo(() => new Intl.DateTimeFormat(LOCALES[settings.language]), [settings.language]);
-  const captureDate = useMemo(() => new Intl.DateTimeFormat(LOCALES[settings.language],
-    { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }), [settings.language]);
+  const dateFormat = useMemo(() => new Intl.DateTimeFormat(LOCALES[lang]), [lang]);
+  const captureDate = useMemo(() => new Intl.DateTimeFormat(LOCALES[lang],
+    { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }), [lang]);
   const gameItem = useCallback((game: Game): Item => ({ id: String(game.id), title: game.name, icon: 'game', artwork: game.artwork, game,
     subtitle: game.lastPlayed ? dateFormat.format(new Date(game.lastPlayed * 1000)) : game.installed || game.shortcut ? t.ready : t.notInstalled,
     action: () => run(() => platform.launch(game)),
@@ -169,7 +171,7 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
     const favourites = folders.find(folder => folder.id === 'favorite');
     // Steam's "installed locally" collection is the same as our installed folder.
     const own = folders.filter(folder => folder.id !== 'favorite' && folder.id !== 'local-install');
-    const byName = (a: Game, b: Game) => a.name.localeCompare(b.name, LOCALES[settings.language]);
+    const byName = (a: Game, b: Game) => a.name.localeCompare(b.name, LOCALES[lang]);
     const lists: Array<{ id: string; name: string; icon: IconName; games: Game[]; always?: boolean }> = [
       { id: 'builtin:recent', name: t.recentGames, icon: 'clock', games: listedGames.filter(game => game.lastPlayed > 0).slice(0, settings.recentCount) },
       { id: 'builtin:installed', name: t.installedGames, icon: 'play', games: ready },
@@ -179,7 +181,7 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
       { id: 'builtin:shortcuts', name: t.shortcuts, icon: 'folder', games: listedGames.filter(game => game.shortcut) },
     ];
     return lists.filter(list => list.always || list.games.length > 0);
-  }, [games, listedGames, folders, t, settings.language, settings.recentCount]);
+  }, [games, listedGames, folders, t, lang, settings.recentCount]);
   const activeFolder = settings.groupByFolders && category === 'game' ? folderLists.find(folder => folder.id === folderId) : undefined;
   const albums = useMemo(() => {
     const names = new Map(games.map(game => [String(game.id), game.name]));
@@ -246,7 +248,7 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
     subtitle: media.failed ? t.retry : media.library ? (category === 'photo' ? t.photosHelp : t.videosHelp) : undefined,
     icon: mediaKind ?? 'folder', action: media.retry,
   }];
-  const locale = LOCALES[settings.language];
+  const locale = LOCALES[lang];
   const day = (seconds?: number) => seconds ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(seconds * 1000)) : t.never;
   const duration = (minutes?: number) => minutes === undefined ? '—' : minutes < 60 ? `${minutes} ${t.minutes}` : `${Math.floor(minutes / 60)} ${t.hours} ${String(minutes % 60).padStart(2, '0')}`;
   const bytes = (n: number) => n >= 1e9 ? `${(n / 1e9).toLocaleString(locale, { maximumFractionDigits: 1 })} Go` : `${Math.round(n / 1e6).toLocaleString(locale)} Mo`;
@@ -282,7 +284,7 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
       ...(info.reviewPercent ? [{ label: t.reviews, value: `${info.reviewPercent} %` }] : []),
     ];
     return { kind: 'game', title: game.name, subtitle: game.installed || game.shortcut ? t.ready : t.notInstalled, image: game.artwork[0], icon: 'game', rows,
-      actions: itemOptions(gameItem(game), platform, settings.language).filter(option => option.id !== 'details')
+      actions: itemOptions(gameItem(game), platform, lang).filter(option => option.id !== 'details')
         .concat([{ id: 'game-page', title: t.gamePage, icon: 'info', description: t.gamePageHelp, perform: () => platform.details(game) }]) };
   };
   const downloadsPanel = (): PanelData | undefined => {
@@ -338,7 +340,7 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
   const targetGame = menuTarget?.game;
   const liveGame = targetGame && (games.find(game => game.id === targetGame.id) ?? targetGame);
   const menuItem = menuTarget && (liveGame ? { ...menuTarget, game: liveGame, title: liveGame.name } : items.find(item => item.id === menuTarget.id));
-  const options = menuItem ? itemOptions(menuItem, platform, settings.language) : [];
+  const options = menuItem ? itemOptions(menuItem, platform, lang) : [];
   const activeMenuIndex = clampSelection(menuIndex, options.length);
   const canShowOptions = (item: Item) => item.checked === undefined && !['loading', 'empty-folder', 'media-empty', 'media-retry'].includes(item.id);
   useEffect(() => { if (menuTarget && !menuItem) setMenuTarget(null); }, [menuTarget, menuItem]);
@@ -407,7 +409,7 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
     if (menuItem?.game) run(options[i].perform);
     else options[i].perform();
   };
-  const panel = useMemo(() => panelBuilder?.build(), [panelBuilder, panelTick, settings.language]); // eslint-disable-line react-hooks/exhaustive-deps
+  const panel = useMemo(() => panelBuilder?.build(), [panelBuilder, panelTick, lang]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!panelBuilder) return;
     const timer = setInterval(() => setPanelTick(n => n + 1), 2000);
@@ -538,10 +540,10 @@ export function Xmb({ platform, settings, updateSettings, InputSurface = Keyboar
         <div className="xmb-live" aria-live="polite">{t[category]}: {selected?.title}</div>
       </div>
       {viewerFile && mediaKind && media.library && <MediaViewer ref={viewer} key={viewerFile.id} file={viewerFile} kind={mediaKind} base={media.library.base}
-        language={settings.language} previous={index > 0} next={index + 1 < items.length} step={delta => selectItem(index + delta)}
+        language={lang} previous={index > 0} next={index + 1 < items.length} step={delta => selectItem(index + delta)}
         close={() => { playSound('back', settings.sounds); setViewing(false); root.current?.querySelector<HTMLElement>('.xmb-input')?.focus({ preventScroll: true }); }} />}
-      {menuItem && <ItemMenu item={menuItem} options={options} index={activeMenuIndex} activate={activateMenu} close={closeMenu} language={settings.language} glyphs={settings.glyphs} />}
-      {panel && !menuItem && <InfoPanel panel={panel} index={clampSelection(panelIndex, panel.actions.length)} activate={activatePanel} close={closePanel} language={settings.language} glyphs={settings.glyphs} />}
+      {menuItem && <ItemMenu item={menuItem} options={options} index={activeMenuIndex} activate={activateMenu} close={closeMenu} language={lang} glyphs={settings.glyphs} />}
+      {panel && !menuItem && <InfoPanel panel={panel} index={clampSelection(panelIndex, panel.actions.length)} activate={activatePanel} close={closePanel} language={lang} glyphs={settings.glyphs} />}
     </InputSurface>
   </div>;
 }

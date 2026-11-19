@@ -45,3 +45,21 @@ test('recently played holds 5 games by default, 10 or 20 on request', () => {
   assert.equal(cleanSettings({ recentCount: 20 }).recentCount, 20);
   assert.equal(cleanSettings({ recentCount: 7 }).recentCount, 5);
 });
+
+test('every XMB language has every word, and «auto» follows Steam', async () => {
+  const { words } = await import('../src/i18n');
+  const { languageFrom } = await import('../src/language');
+  const keys = Object.keys(words.en).sort();
+  for (const [lang, list] of Object.entries(words)) {
+    assert.deepEqual(Object.keys(list).sort(), keys, lang);
+    for (const [key, value] of Object.entries(list)) assert.ok(typeof value === 'string' && value.trim(), `${lang}.${key}`);
+  }
+  assert.equal(cleanSettings({}).language, 'auto');
+  assert.equal(cleanSettings({ language: 'auto' }).language, 'auto');
+  assert.equal(cleanSettings({ language: 'ja' }).language, 'ja');
+  assert.equal(languageFrom('french'), 'fr');
+  assert.equal(languageFrom('brazilian'), 'pt');
+  assert.equal(languageFrom('schinese'), 'zh');
+  assert.equal(languageFrom('de-AT'), 'de');
+  assert.equal(languageFrom('koreana'), undefined);
+});

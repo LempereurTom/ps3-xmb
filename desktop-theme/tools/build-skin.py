@@ -1,7 +1,7 @@
 """Builds PS3-XMB/skin.json from Glass Dusk's skin.json (tools/skin.glass-dusk.json).
 
 Every Glass Dusk setting is kept with the same option files; names, values and descriptions
-are translated to French, and a "PS3" tab is added. Run: python tools/build-skin.py
+keep their English names, their descriptions gain a French line, and a "PS3" tab is added. Run: python tools/build-skin.py
 """
 import json
 from pathlib import Path
@@ -9,7 +9,6 @@ from pathlib import Path
 THEME = Path(__file__).resolve().parent.parent / "PS3-XMB"
 source = json.loads((Path(__file__).resolve().parent / "skin.glass-dusk.json").read_text(encoding="utf-8"))
 
-TABS = {"Look": "Apparence", "Library": "Bibliothèque", "Big Picture & overlay": "Big Picture et overlay", "Plugins": "Plugins"}
 YES_NO = {"yes": "yes", "no": "no"}  # Millennium draws yes/no as a checkbox: keep them as is.
 
 # Glass Dusk setting -> (French name, French description, {English value: French value})
@@ -53,54 +52,64 @@ FR = {
 }
 
 conditions = {}
-# The PS3 tab comes first in the settings.
-PS3_COLOURS = [("silver", "Argent (janvier)"), ("gold", "Or (février)"), ("lime", "Citron vert (mars)"), ("pink", "Rose (avril)"),
-               ("green", "Vert (mai)"), ("purple", "Pourpre (juin)"), ("teal", "Turquoise (juillet)"), ("sky", "Bleu ciel (août)"),
-               ("blue", "Bleu (septembre)"), ("violet", "Violet (octobre)"), ("brown", "Marron (novembre)"), ("red", "Rouge (décembre)"), ("black", "Noir")]
+# Names and values are in English (Millennium has one label per setting, and steambrew.app is read
+# worldwide); each description says it in English, then in French.
+bi = lambda en, fr: f"{en}  ·  FR : {fr}"
+PS3_COLOURS = [("silver", "Silver (January)"), ("gold", "Gold (February)"), ("lime", "Lime (March)"), ("pink", "Pink (April)"),
+               ("green", "Green (May)"), ("purple", "Purple (June)"), ("teal", "Teal (July)"), ("sky", "Sky blue (August)"),
+               ("blue", "Blue (September)"), ("violet", "Violet (October)"), ("brown", "Brown (November)"), ("red", "Red (December)"), ("black", "Black")]
 css = lambda src, affects=(".*",): {"TargetCss": {"affects": list(affects), "src": src}}
-conditions["XMB en Big Picture"] = {"default": "Activé", "tab": "PS3",
-    "description": "Le vrai menu XMB de la PS3 remplace l'accueil de Big Picture (catégories, jeux, collections, captures, options △). Inutile d'installer Decky. Si le plugin Decky PS3 XMB est aussi installé, c'est lui qui s'affiche.",
-    "values": {"Activé": {"TargetJs": {"affects": ["GamepadUIPopupWindowBody"], "src": "ps3/xmb.js"}}, "Désactivé": css("ps3/xmb-off.css")}}
-conditions["Fond PS3"] = {"default": "Couleur du mois et vague XMB", "tab": "PS3",
-    "description": "Le fond de la PS3 sous le verre de Glass Dusk, sur le bureau et dans tout Big Picture : la couleur change chaque mois et s'assombrit le soir, avec la vague XMB.",
-    "values": {"Couleur du mois et vague XMB": css("ps3/ps3-bpm.css", ["GamepadUIPopupWindowBody"]), "Glass Dusk seul": css("ps3/off.css")}}
-conditions["Couleur PS3"] = {"default": "Original (change chaque mois)", "tab": "PS3",
-    "description": "Original suit le mois comme sur PS3. Les autres couleurs restent fixes.",
-    "values": {"Original (change chaque mois)": {}, **{label: css(f"ps3/colours/{key}.css") for key, label in PS3_COLOURS}}}
-conditions["Vague XMB"] = {"default": "Animée", "tab": "PS3",
-    "description": "Animée : la vague ondule (20 images/s sur le bureau, 30 en Big Picture), en pause quand Steam est réduit ou en jeu. Fixe : dessinée une fois, pour les PC modestes.",
-    "values": {"Animée": {}, "Fixe": css("ps3/wave-still.css"), "Masquée": css("ps3/wave-off.css")}}
-conditions["Vague au-dessus de l'art du jeu"] = {"default": "yes", "tab": "PS3",
-    "description": "Oui : la vague brille par-dessus l'art du jeu ouvert. Non : l'art du jeu la recouvre, comme le fond d'un jeu sur PS3.",
+# The PS3 tab comes first in the settings.
+conditions["XMB in Big Picture"] = {"default": "On", "tab": "PS3",
+    "description": bi("The real PS3 XMB replaces the Big Picture home (categories, games, collections, screenshots, △ options). No Decky needed; if the Decky PS3 XMB plugin is installed too, it is the one shown. Its language follows Steam's (System Settings → System Language).",
+                      "le vrai menu XMB de la PS3 remplace l'accueil de Big Picture. Decky est inutile ; si le plugin Decky PS3 XMB est installé, c'est lui qui s'affiche. Sa langue suit celle de Steam."),
+    "values": {"On": {"TargetJs": {"affects": ["GamepadUIPopupWindowBody"], "src": "ps3/xmb.js"}}, "Off": css("ps3/xmb-off.css")}}
+conditions["PS3 background"] = {"default": "Monthly colour and XMB wave", "tab": "PS3",
+    "description": bi("The PS3 background under Glass Dusk's glass, on the desktop and all through Big Picture: the colour changes every month and dims in the evening, with the XMB wave.",
+                      "le fond de la PS3 sous le verre, sur le bureau et dans tout Big Picture : couleur du mois, assombrie le soir, et vague XMB."),
+    "values": {"Monthly colour and XMB wave": css("ps3/ps3-bpm.css", ["GamepadUIPopupWindowBody"]), "Glass Dusk only": css("ps3/off.css")}}
+conditions["PS3 colour"] = {"default": "Original (changes every month)", "tab": "PS3",
+    "description": bi("Original follows the month, as on a PS3. The other colours stay fixed.", "Original suit le mois comme sur PS3 ; les autres couleurs restent fixes."),
+    "values": {"Original (changes every month)": {}, **{label: css(f"ps3/colours/{key}.css") for key, label in PS3_COLOURS}}}
+conditions["XMB wave"] = {"default": "Animated", "tab": "PS3",
+    "description": bi("Animated: the wave drifts smoothly, always behind Steam, and pauses while Steam is minimised or you play. Still: drawn once, for modest PCs.",
+                      "Animée : la vague ondule, toujours derrière Steam, en pause quand Steam est réduit ou en jeu. Fixe : dessinée une fois, pour les PC modestes."),
+    "values": {"Animated": {}, "Still": css("ps3/wave-still.css"), "Hidden": css("ps3/wave-off.css")}}
+conditions["Wave over the game art"] = {"default": "yes", "tab": "PS3",
+    "description": bi("Yes: the wave shines over the open game's art. No: the art covers it, like a game's background on a PS3.",
+                      "oui : la vague brille par-dessus l'art du jeu ouvert ; non : l'art du jeu la recouvre."),
     "values": {"yes": {}, "no": css("ps3/wave-under.css")}}
-conditions["Accent"] = {"default": "Art du jeu (Glass Dusk)", "tab": "PS3",
-    "description": "Art du jeu : boutons et surbrillances aux couleurs du jeu ouvert. Couleur PS3 : la couleur du thème PS3 partout (menus et fenêtres compris).",
-    "values": {"Art du jeu (Glass Dusk)": {}, "Couleur PS3": css("ps3/accent.css")}}
-conditions["Teinte du verre"] = {"default": "Couleur PS3", "tab": "PS3",
-    "description": "Couleur PS3 : le verre fumé prend la teinte du mois. Onglet Couleurs : la teinte « Glass tint » de l'onglet Couleurs.",
-    "values": {"Couleur PS3": {}, "Onglet Couleurs": css("ps3/glass-own.css")}}
-conditions["Assombrir le soir"] = {"default": "yes", "tab": "PS3",
-    "description": "Comme la PS3, le fond s'assombrit de 18 h à 7 h.",
+conditions["Accent"] = {"default": "Game art (Glass Dusk)", "tab": "PS3",
+    "description": bi("Game art: buttons and highlights in the open game's colours. PS3 colour: the PS3 theme colour everywhere, menus and windows included.",
+                      "Art du jeu : boutons et surbrillances aux couleurs du jeu ouvert. Couleur PS3 : la couleur du thème PS3 partout."),
+    "values": {"Game art (Glass Dusk)": {}, "PS3 colour": css("ps3/accent.css")}}
+conditions["Glass tint"] = {"default": "PS3 colour", "tab": "PS3",
+    "description": bi("PS3 colour: the smoked glass takes the month's tint. Colours tab: the «Glass tint» of the Colours tab.",
+                      "Couleur PS3 : le verre fumé prend la teinte du mois. Onglet Couleurs : la teinte « Glass tint » de l'onglet Couleurs."),
+    "values": {"PS3 colour": {}, "Colours tab": css("ps3/glass-own.css")}}
+conditions["Dim in the evening"] = {"default": "yes", "tab": "PS3",
+    "description": bi("Like the PS3, the background dims from 6 pm to 7 am.", "comme la PS3, le fond s'assombrit de 18 h à 7 h."),
     "values": {"yes": {}, "no": css("ps3/night-off.css")}}
 
 for name, spec in source["Conditions"].items():
-    fr_name, fr_desc, values = FR[name]
-    out = {k: v for k, v in spec.items() if k not in ("values", "default", "tab", "description")}
-    out["default"] = values[spec["default"]]
+    fr_name, fr_desc, _values = FR[name]
+    out = dict(spec)
+    out["description"] = bi(spec.get("description", ""), fr_desc)
     if name == "Theme language":
-        out["default"] = "Français"
-    out["tab"] = TABS.get(spec.get("tab", ""), spec.get("tab", ""))
-    out["description"] = fr_desc
-    out["values"] = {values[k]: v for k, v in spec["values"].items()}
-    assert len(out["values"]) == len(spec["values"]), name
-    conditions[fr_name] = out
+        # «Auto» follows Steam's interface language (js/dusk.js), English is now a choice of its own.
+        out["values"] = {"Auto (Steam)": {}, "English": css("css/options/lang-en.css"),
+                         **{k: v for k, v in spec["values"].items() if k != "English"}}
+        out["default"] = "Auto (Steam)"
+        out["description"] = bi("Text the theme draws itself: home header, Big Picture chip, dates. Auto follows Steam's language.",
+                                "textes dessinés par le thème : en-tête de l'accueil, puce Big Picture, dates. Auto suit la langue de Steam.")
+    conditions[name] = out
 
 skin = {k: v for k, v in source.items() if k not in ("Conditions", "Patches")}
 skin.update({
     "name": "PS3 XMB · Glass Dusk",
-    "description": "Le verre fumé et les couleurs dynamiques de Glass Dusk sur le fond de la PlayStation 3 : couleur du mois, vague XMB, accent tiré de l'art du jeu. Bibliothèque, magasin, menus, overlay et Big Picture. Compagnon du plugin Decky « PS3 XMB ».",
+    "description": "The PlayStation 3 interface for Steam: a real XMB in Big Picture, and the PS3 background (colour of the month, XMB wave) under Glass Dusk's smoked glass and game-art colours on the desktop. English, French and 8 more languages.",
     "author": "LempereurTom (PS3 XMB) · Yareli (Glass Dusk)",
-    "version": "0.2.7",
+    "version": "0.3.0",
     "tags": ["PS3", "XMB", "Glass", "Dynamic", "Big Picture"],
 })
 # Its own repository (steambrew.app reads the README and updates from it), its own previews;

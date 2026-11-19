@@ -1,4 +1,6 @@
 import { PALETTES, words, type IconName, type Settings } from './model';
+import { uiLanguage } from './language';
+import { LANGUAGE_NAMES } from './i18n';
 
 export interface SettingNode {
   id: string;
@@ -13,7 +15,7 @@ export interface SettingNode {
 }
 
 export function preferenceTree(settings: Settings): SettingNode[] {
-  const t = words[settings.language];
+  const t = words[uiLanguage(settings.language)];
   function choice<K extends keyof Settings>(key: K, title: string, icon: IconName, description: string, values: ReadonlyArray<readonly [Settings[K], string]>): SettingNode {
     return {
       id: key, title, icon, description, current: String(settings[key]),
@@ -24,7 +26,7 @@ export function preferenceTree(settings: Settings): SettingNode[] {
   const toggle = [[true, t.on], [false, t.off]] as const;
   return [
     { id: 'system', title: t.system, icon: 'system', children: [
-      choice('language', t.language, 'network', t.languageHelp, [['fr', 'Français'], ['en', 'English'], ['ru', 'Русский']]),
+      choice('language', t.language, 'network', t.languageHelp, [['auto', t.languageAuto], ...LANGUAGE_NAMES]),
       choice('glyphs', t.glyphs, 'game', t.glyphsHelp, [['playstation', t.playstation], ['xbox', t.xbox]]),
       { id: 'date', title: t.date, description: t.dateHelp, icon: 'clock', destination: 'settings' },
       { id: 'display', title: t.display, description: t.displayHelp, icon: 'display', destination: 'display' },

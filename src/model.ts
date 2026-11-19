@@ -1,8 +1,10 @@
 export type IconName = 'users' | 'settings' | 'system' | 'photo' | 'music' | 'video' | 'game' | 'network' | 'steam' | 'store' | 'friends' | 'folder' | 'memory' | 'theme' | 'clock' | 'sound' | 'display' | 'download' | 'info' | 'play' | 'delete' | 'profile' | 'power' | 'exit' | 'browser';
 export type Category = 'users' | 'settings' | 'photo' | 'music' | 'video' | 'game' | 'network' | 'steam' | 'friends';
 export type Command = 'left' | 'right' | 'up' | 'down' | 'confirm' | 'back' | 'details' | 'menu';
-export const LANGUAGES = ['fr', 'en', 'ru'] as const;
+export const LANGUAGES = ['en', 'fr', 'de', 'es', 'pt', 'it', 'pl', 'ru', 'zh', 'ja'] as const;
 export type Language = typeof LANGUAGES[number];
+/** «auto» follows Steam's interface language (English when the XMB has no words for it). */
+export type LanguageSetting = Language | 'auto';
 /** PS3 "Original" follows the calendar month; the others are the fixed PS3 colours. */
 export const PALETTES = ['original', 'silver', 'gold', 'lime', 'pink', 'green', 'purple', 'teal', 'sky', 'blue', 'violet', 'brown', 'red', 'black'] as const;
 export type Palette = typeof PALETTES[number];
@@ -19,7 +21,7 @@ export type Accent = typeof ACCENTS[number];
 export interface Settings {
   enabled: boolean;
   palette: Palette;
-  language: Language;
+  language: LanguageSetting;
   glyphs: Glyphs;
   panels: Panels;
   accent: Accent;
@@ -33,7 +35,7 @@ export interface Settings {
 }
 export const RECENT_COUNTS = [5, 10, 20] as const;
 export type RecentCount = typeof RECENT_COUNTS[number];
-export const DEFAULT_SETTINGS: Settings = { enabled: false, palette: 'original', language: 'fr', glyphs: 'playstation', panels: 'glass', accent: 'game', sounds: true, motion: true, installedOnly: false, gameBackground: true, groupByFolders: true, recentCount: 5 };
+export const DEFAULT_SETTINGS: Settings = { enabled: false, palette: 'original', language: 'auto', glyphs: 'playstation', panels: 'glass', accent: 'game', sounds: true, motion: true, installedOnly: false, gameBackground: true, groupByFolders: true, recentCount: 5 };
 
 export interface Game {
   id: number;
@@ -92,7 +94,7 @@ export function cleanSettings(value: unknown): Settings {
   return {
     enabled: typeof s.enabled === 'boolean' ? s.enabled : DEFAULT_SETTINGS.enabled,
     palette: PALETTES.includes(s.palette as Palette) ? s.palette! : DEFAULT_SETTINGS.palette,
-    language: LANGUAGES.includes(s.language as Language) ? s.language! : DEFAULT_SETTINGS.language,
+    language: s.language === 'auto' || LANGUAGES.includes(s.language as Language) ? s.language! : DEFAULT_SETTINGS.language,
     glyphs: GLYPHS.includes(s.glyphs as Glyphs) ? s.glyphs! : DEFAULT_SETTINGS.glyphs,
     panels: PANELS.includes(s.panels as Panels) ? s.panels! : DEFAULT_SETTINGS.panels,
     accent: ACCENTS.includes(s.accent as Accent) ? s.accent! : DEFAULT_SETTINGS.accent,
